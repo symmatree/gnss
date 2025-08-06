@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/symmatree/ublox"
+	"github.com/symmatree/gnss"
 )
 
 func main() {
