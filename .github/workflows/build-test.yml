@@ -1,0 +1,43 @@
+name: Build Test
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main # Run post-commit to validate, also to update caches.
+  schedule:
+    - cron: "0 1 * * *" # Daily at 0100 UTC
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: DateAndTimeStamps
+        id: stamps
+        run: |
+          set -euo pipefail
+          timestamp=$(date +'%Y%m%dT%H%M%S')
+          datestamp=$(date +'%Y%m%d')
+          echo "TIMESTAMP=${timestamp}" | tee -a "$GITHUB_OUTPUT"
+          echo "DATESTAMP=${datestamp}" | tee -a "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: ">=3.11"
+      - uses: pre-commit/action@v3.0.1
+        name: pre-commit
+        env:
+          # `no-commit-to-branch` fails when run --all-files against main.
+          SKIP: "no-commit-to-branch"
+        with:
+          # Diff on failure is a default arg.
+          extra_args: "--all-files"
+      - name: Build and test
+        run: |
+          set -euo pipefail
+          cd "${{ github.workspace }}"
+          ./build.sh
+      - name: Verify pristine
+        run: |
+          git status
+          git diff-index --quiet HEAD -- || (echo "Uncommitted changes found!" && exit 1)
