@@ -3,8 +3,50 @@ package msgparse
 import (
 	"os"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 )
+
+// compareVersions compares two version strings like "3.14.9" and "3.14.10"
+// Returns true if v1 < v2
+func compareVersions(v1, v2 string) bool {
+	parts1 := strings.Split(v1, ".")
+	parts2 := strings.Split(v2, ".")
+
+	maxLen := len(parts1)
+	if len(parts2) > maxLen {
+		maxLen = len(parts2)
+	}
+
+	for i := 0; i < maxLen; i++ {
+		var n1, n2 int
+		var err error
+
+		if i < len(parts1) {
+			n1, err = strconv.Atoi(parts1[i])
+			if err != nil {
+				return v1 < v2 // fallback to string comparison
+			}
+		}
+
+		if i < len(parts2) {
+			n2, err = strconv.Atoi(parts2[i])
+			if err != nil {
+				return v1 < v2 // fallback to string comparison
+			}
+		}
+
+		if n1 < n2 {
+			return true
+		} else if n1 > n2 {
+			return false
+		}
+		// if equal, continue to next part
+	}
+
+	return false // versions are equal
+}
 
 func TestSplitIntoMessages(t *testing.T) {
 	// Open the UBX-INF section file
@@ -87,5 +129,82 @@ func TestSplitIntoMessages(t *testing.T) {
 				t.Errorf("PayloadDescription mismatch:\nGot:      %v\nExpected: %v", messages[i].payloadDescription, expectedInf[i].payloadDescription)
 			}
 		}
+	}
+}
+
+func TestAllSectionFiles(t *testing.T) {
+	// List of all section files with their expected section prefixes
+	sectionFiles := []struct {
+		filename      string
+		sectionPrefix string
+	}{
+		{"section-3.9-UBX-ACK.txt", "3.9"},
+		{"section-3.10-UBX-CFG.txt", "3.10"},
+		{"section-3.11-UBX-ESF.txt", "3.11"},
+		{"section-3.12-UBX-INF.txt", "3.12"},
+		{"section-3.13-UBX-MGA.txt", "3.13"},
+		{"section-3.14-UBX-MON.txt", "3.14"},
+		{"section-3.15-UBX-NAV.txt", "3.15"},
+		{"section-3.16-UBX-NAV2.txt", "3.16"},
+		{"section-3.17-UBX-RXM.txt", "3.17"},
+		{"section-3.18-UBX-SEC.txt", "3.18"},
+		{"section-3.19-UBX-TIM.txt", "3.19"},
+		{"section-3.20-UBX-UPD.txt", "3.20"},
+	}
+
+	for _, sf := range sectionFiles {
+		t.Run(sf.filename, func(t *testing.T) {
+			// Open the section file
+			file, err := os.Open("F9-HPS1.40-interface/" + sf.filename)
+			if err != nil {
+				t.Fatalf("Failed to open test file %s: %v", sf.filename, err)
+			}
+			defer file.Close()
+
+			// Parse the messages
+			messages, err := SplitIntoMessages(file)
+			if err != nil {
+				t.Fatalf("Failed to parse messages from %s: %v", sf.filename, err)
+			}
+
+			// Check that we got at least one message
+			if len(messages) == 0 {
+				t.Fatalf("Expected at least one message from %s, got 0", sf.filename)
+			}
+
+			// Verify all messages have sections starting with the expected prefix
+			for i, msg := range messages {
+				if !strings.HasPrefix(msg.section, sf.sectionPrefix) {
+					t.Errorf("Message %d in %s has section %q, expected to start with %q",
+						i, sf.filename, msg.section, sf.sectionPrefix)
+				}
+
+				// Check that section field is not empty
+				if msg.section == "" {
+					t.Errorf("Message %d in %s has empty section field", i, sf.filename)
+				}
+
+				// Check that name follows UBX pattern
+				if !strings.HasPrefix(msg.name, "UBX-") {
+					t.Errorf("Message %d in %s has name %q, expected to start with 'UBX-'",
+						i, sf.filename, msg.name)
+				}
+			}
+
+			// Verify sections are sequential within each file
+			prevSection := ""
+			for i, msg := range messages {
+				if prevSection != "" {
+					// Compare section numbers to ensure they're sequential
+					if !compareVersions(prevSection, msg.section) {
+						t.Errorf("Message %d in %s has section %q which is not greater than previous section %q",
+							i, sf.filename, msg.section, prevSection)
+					}
+				}
+				prevSection = msg.section
+			}
+
+			t.Logf("Successfully parsed %d messages from %s", len(messages), sf.filename)
+		})
 	}
 }
