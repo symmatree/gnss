@@ -1,0 +1,1529 @@
+3.15 UBX-NAV (0x01)
+The messages in the UBX-NAV class are used to output navigation results and data, such as
+position, altitude and velocity in a number of formats, and status flags and accuracy estimate
+figures, or satellite and signal information. The messages are generated with the configured
+navigation rate.
+3.15.1 UBX-NAV-ATT (0x01 0x05)
+3.15.1.1 Attitude solution
+Message UBX-NAV-ATT
+Attitude solution
+Type Periodic/polled
+Comment This message outputs the attitude solution as roll, pitch and heading angles.
+See important comments concerning vehicle attitude given in the Vehicle attitude output section of the
+integration manual.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x05 32 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1[3] reserved0 - - Reserved
+8 I4 roll 1e-5 deg Vehicle roll.
+12 I4 pitch 1e-5 deg Vehicle pitch.
+16 I4 heading 1e-5 deg Vehicle heading.
+20 U4 accRoll 1e-5 deg Vehicle roll accuracy (if null, roll angle is not available).
+24 U4 accPitch 1e-5 deg Vehicle pitch accuracy (if null, pitch angle is not
+available).
+28 U4 accHeading 1e-5 deg Vehicle heading accuracy (if null, heading angle is not
+available).
+3.15.2 UBX-NAV-CLOCK (0x01 0x22)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 112 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.15.2.1 Clock solution
+Message UBX-NAV-CLOCK
+Clock solution
+Type Periodic/polled
+Comment
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x22 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch. See
+section Navigation epochs in the integration manual
+for details.
+See section iTOW timestamps in the integration
+manual for details.
+4 I4 clkB - ns Clock bias
+8 I4 clkD - ns/s Clock drift
+12 U4 tAcc - ns Time accuracy estimate
+16 U4 fAcc - ps/s Frequency accuracy estimate
+3.15.3 UBX-NAV-COV (0x01 0x36)
+3.15.3.1 Covariance matrices
+Message UBX-NAV-COV
+Covariance matrices
+Type Periodic/polled
+Comment This message outputs the covariance matrices for the position and velocity solutions in the topocentric
+coordinate system defined as the local-level North (N), East (E), Down (D) frame. As the covariance matrices
+are symmetric, only the upper triangular part is output.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x36 64 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1 posCovValid - - Position covariance matrix validity flag
+6 U1 velCovValid - - Velocity covariance matrix validity flag
+7 U1[9] reserved0 - - Reserved
+16 R4 posCovNN - m^2 Position covariance matrix value p_NN
+20 R4 posCovNE - m^2 Position covariance matrix value p_NE
+24 R4 posCovND - m^2 Position covariance matrix value p_ND
+28 R4 posCovEE - m^2 Position covariance matrix value p_EE
+32 R4 posCovED - m^2 Position covariance matrix value p_ED
+36 R4 posCovDD - m^2 Position covariance matrix value p_DD
+40 R4 velCovNN - m^2/s^2 Velocity covariance matrix value v_NN
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 113 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+44 R4 velCovNE - m^2/s^2 Velocity covariance matrix value v_NE
+48 R4 velCovND - m^2/s^2 Velocity covariance matrix value v_ND
+52 R4 velCovEE - m^2/s^2 Velocity covariance matrix value v_EE
+56 R4 velCovED - m^2/s^2 Velocity covariance matrix value v_ED
+60 R4 velCovDD - m^2/s^2 Velocity covariance matrix value v_DD
+3.15.4 UBX-NAV-DOP (0x01 0x04)
+3.15.4.1 Dilution of precision
+Message UBX-NAV-DOP
+Dilution of precision
+Type Periodic/polled
+Comment • DOP values are dimensionless.
+• All DOP values are scaled by a factor of 100. If the unit transmits a value of e.g. 156, the DOP value is
+1.56.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x04 18 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U2 gDOP 0.01 - Geometric DOP
+6 U2 pDOP 0.01 - Position DOP
+8 U2 tDOP 0.01 - Time DOP
+10 U2 vDOP 0.01 - Vertical DOP
+12 U2 hDOP 0.01 - Horizontal DOP
+14 U2 nDOP 0.01 - Northing DOP
+16 U2 eDOP 0.01 - Easting DOP
+3.15.5 UBX-NAV-EELL (0x01 0x3d)
+3.15.5.1 Position error ellipse parameters
+Message UBX-NAV-EELL
+Position error ellipse parameters
+Type Periodic/polled
+Comment This message outputs the error ellipse parameters for the position solutions.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x3d 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1 reserved0 - - Reserved
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 114 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+6 U2 errEllipse
+Orient
+1e-2 deg Orientation of semi-major axis of error ellipse (degrees
+from true north)
+8 U4 errEllipse
+Major
+- mm Semi-major axis of error ellipse
+12 U4 errEllipse
+Minor
+- mm Semi-minor axis of error ellipse
+3.15.6 UBX-NAV-EOE (0x01 0x61)
+3.15.6.1 End of epoch
+Message UBX-NAV-EOE
+End of epoch
+Type Periodic
+Comment This message is intended to be used as a marker to collect all navigation messages of an epoch. It is output
+after all enabled NAV class messages and after all enabled NMEA messages.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x61 4 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+3.15.7 UBX-NAV-GEOFENCE (0x01 0x39)
+3.15.7.1 Geofencing status
+Message UBX-NAV-GEOFENCE
+Geofencing status
+Type Periodic/polled
+Comment This message outputs the evaluated states of all configured geofences for the current epoch's position.
+See section Geofencing in the integration manual for feature details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x39 8 + numFences·2 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1 status - - Geofencing status
+• 0 - Geofencing not available or not reliable
+• 1 - Geofencing active
+6 U1 numFences - - Number of geofences
+7 U1 combState - - Combined (logical OR) state of all geofences
+• 0 - Unknown
+• 1 - Inside
+• 2 - Outside
+Start of repeated group (numFences times)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 115 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+8 + n·2 U1 state - - Geofence state
+• 0 - Unknown
+• 1 - Inside
+• 2 - Outside
+9 + n·2 U1 id - - Geofence ID (0 = not available)
+End of repeated group (numFences times)
+3.15.8 UBX-NAV-HPPOSECEF (0x01 0x13)
+3.15.8.1 High precision position solution in ECEF
+Message UBX-NAV-HPPOSECEF
+High precision position solution in ECEF
+Type Periodic/polled
+Comment See important comments concerning validity of position given in section Navigation output filters in the
+integration manual.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x13 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1[3] reserved0 - - Reserved
+4 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+8 I4 ecefX - cm ECEF X coordinate
+12 I4 ecefY - cm ECEF Y coordinate
+16 I4 ecefZ - cm ECEF Z coordinate
+20 I1 ecefXHp 0.1 mm High precision component of ECEF X coordinate. Must
+be in the range of -99..+99. Precise coordinate in cm =
+ecefX + (ecefXHp * 1e-2).
+21 I1 ecefYHp 0.1 mm High precision component of ECEF Y coordinate. Must
+be in the range of -99..+99. Precise coordinate in cm =
+ecefY + (ecefYHp * 1e-2).
+22 I1 ecefZHp 0.1 mm High precision component of ECEF Z coordinate. Must
+be in the range of -99..+99. Precise coordinate in cm =
+ecefZ + (ecefZHp * 1e-2).
+23 X1 flags - - Additional flags
+bit 0   U:1 invalidEcef - - 1 = Invalid ecefX, ecefY, ecefZ, ecefXHp, ecefYHp and
+ecefZHp
+24 U4 pAcc 0.1 mm Position Accuracy Estimate
+3.15.9 UBX-NAV-HPPOSLLH (0x01 0x14)
+3.15.9.1 High precision geodetic position solution
+Message UBX-NAV-HPPOSLLH
+High precision geodetic position solution
+Type Periodic/polled
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 116 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Comment See important comments concerning validity of position given in section Navigation output filters in the
+integration manual.
+This message outputs the Geodetic position in the currently selected ellipsoid. The default is the WGS84
+Ellipsoid, but can be changed with the message CFG-NAVSPG-USE_USRDAT.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x14 36 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1[2] reserved0 - - Reserved
+3 X1 flags - - Additional flags
+bit 0   U:1 invalidLlh - - 1 = Invalid lon, lat, height, hMSL, lonHp, latHp,
+heightHp and hMSLHp
+4 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+8 I4 lon 1e-7 deg Longitude
+12 I4 lat 1e-7 deg Latitude
+16 I4 height - mm Height above ellipsoid.
+20 I4 hMSL - mm Height above mean sea level
+24 I1 lonHp 1e-9 deg High precision component of longitude. Must be in the
+range -99..+99. Precise longitude in deg * 1e-7 = lon +
+(lonHp * 1e-2).
+25 I1 latHp 1e-9 deg High precision component of latitude. Must be in the
+range -99..+99. Precise latitude in deg * 1e-7 = lat +
+(latHp * 1e-2).
+26 I1 heightHp 0.1 mm High precision component of height above ellipsoid.
+Must be in the range -9..+9. Precise height in mm =
+height + (heightHp * 0.1).
+27 I1 hMSLHp 0.1 mm High precision component of height above mean sea
+level. Must be in range -9..+9. Precise height in mm =
+hMSL + (hMSLHp * 0.1)
+28 U4 hAcc 0.1 mm Horizontal accuracy estimate
+32 U4 vAcc 0.1 mm Vertical accuracy estimate
+3.15.10 UBX-NAV-ODO (0x01 0x09)
+3.15.10.1 Odometer solution
+Message UBX-NAV-ODO
+Odometer solution
+Type Periodic/polled
+Comment This message outputs the traveled distance since last reset (see UBX-NAV-RESETODO) together with an
+associated estimated accuracy and the total cumulated ground distance (can only be reset by a cold start
+of the receiver).
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x09 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 117 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+0 U1 version - - Message version (0x00 for this version)
+1 U1[3] reserved0 - - Reserved
+4 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+8 U4 distance - m Ground distance since last reset
+12 U4 totalDistance - m Total cumulative ground distance
+16 U4 distanceStd - m Ground distance accuracy (1-sigma)
+3.15.11 UBX-NAV-ORB (0x01 0x34)
+3.15.11.1 GNSS orbit database info
+Message UBX-NAV-ORB
+GNSS orbit database info
+Type Periodic/polled
+Comment Status of the GNSS orbit database knowledge.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x34 8 + numSv·6 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x01 for this version)
+5 U1 numSv - - Number of SVs in the database
+6 U1[2] reserved0 - - Reserved
+Start of repeated group (numSv times)
+8 + n·6 U1 gnssId - - GNSS ID
+9 + n·6 U1 svId - - Satellite ID
+10 + n·6 X1 svFlag - - Information Flags
+bits 1…0   U:2 health - - SV health:
+• 0 = unknown
+• 1 = healthy
+• 2 = not healty
+bits 3…2   U:2 visibility - - SV health:
+• 0 = unknown
+• 1 = below horizon
+• 2 = above horizon
+• 3 = above elevation mask
+11 + n·6 X1 eph - - Ephemeris data
+In products supporting L5 signals, the receiver may
+store multiple ephemeris data sets per satellite.
+ephUsability and ephSource fields show information
+on one of the data sets. It is not possible to choose
+which data set's status is shown.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 118 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bits 4…0   U:5 ephUsability - - How long the receiver will be able to use the stored
+ephemeris data from now on:
+• 31 = The usability period is unknown
+• 30 = The usability period is more than 450
+minutes
+• 30 > n > 0 = The usability period is between
+(n-1)*15 and n*15 minutes
+• 0 = Ephemeris can no longer be used
+bits 7…5   U:3 ephSource - - • 0 = not available
+• 1 = GNSS transmission
+• 2 = external aiding
+• 3-7 = other
+12 + n·6 X1 alm - - Almanac data
+bits 4…0   U:5 almUsability - - How long the receiver will be able to use the stored
+almanac data from now on:
+• 31 = The usability period is unknown
+• 30 = The usability period is more than 30 days
+• 30 > n > 0 = The usability period is between n-1
+and n days
+• 0 = Almanac can no longer be used
+bits 7…5   U:3 almSource - - • 0 = not available
+• 1 = GNSS transmission
+• 2 = external aiding
+• 3-7 = other
+13 + n·6 X1 otherOrb - - Other orbit data available
+bits 4…0   U:5 anoAop
+Usability
+- - How long the receiver will be able to use the orbit data
+from now on:
+• 31 = The usability period is unknown
+• 30 = The usability period is more than 30 days
+• 30 > n > 0 = The usability period is between n-1
+and n days
+• 0 = Data can no longer be used
+bits 7…5   U:3 type - - Type of orbit data:
+• 0 = No orbit data available
+• 1 = AssistNow Offline data
+• 2 = AssistNow Autonomous data
+• 3-7 = Other orbit data
+End of repeated group (numSv times)
+3.15.12 UBX-NAV-PL (0x01 0x62)
+3.15.12.1 Protection level information
+Message UBX-NAV-PL
+Protection level information
+Type Periodic
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 119 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Comment This message provides protection level (PL) values per protection level state (e.g. position ECEF X/Y/Z) and
+w.r.t. the given target misleading information risk (TMIR) per coordinate axis.
+Target misleading information risk is expressed as X [%MI/epoch] (read: X% probability of having an MI per
+epoch). Misleading information (MI) occurs when the Protection Level value is smaller than the true position
+error.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x62 52 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 msgVersion - - Message version (0x01 for this version)
+1 U1 tmirCoeff - - Target misleading information risk (TMIR) [%MI/
+epoch], coefficient integer number of base 10
+scientific notation (see e.g. plPos field)
+2 I1 tmirExp - - Target misleading information risk (TMIR) [%MI/
+epoch], exponent integer number of base 10 scientific
+notation (see e.g. plPos field)
+3 U1 plPosValid - - Position protection level validity
+• 0: Invalid (Protection level should not be used)
+• 1: Protection level is valid
+4 U1 plPosFrame - - Position protection level frame:
+• 0: Invalid (not possible to calculate frame
+conversion)
+• 1: North-East-Down
+• 2: Longitudinal-Lateral-Vertical
+• 3: HorizSemiMajorAxis-HorizSemiMinorAxisVertical
+5 U1 plVelValid - - Velocity protection level validity
+• 0: Invalid (Protection level should not be used)
+• 1: Protection level is valid
+6 U1 plVelFrame - - Velocity protection level frame:
+• 0: Invalid (not possible to calculate frame
+conversion)
+• 1: North-East-Down
+• 2: Longitudinal-Lateral-Vertical
+• 3: HorizSemiMajorAxis-HorizSemiMinorAxisVertical
+7 U1 plTimeValid - - Time protection level validity
+• 0: Invalid (Protection level should not be used)
+• 1: Protection level is valid
+8 U1 plPos
+Invalidity
+Reason
+- - Position protection level invalidity reason
+• 0: Not available
+• 1- 29: Solution not trustworthy
+• 30-100: PL not verified for this receiver
+configuration
+9 U1 plVel
+Invalidity
+Reason
+- - Velocity protection level invalidity reason
+• 0: Not available
+• 1- 29: Solution not trustworthy
+• 30-100: PL not verified for this receiver
+configuration
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 120 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+10 U1 plTime
+Invalidity
+Reason
+- - Time protection level invalidity reason
+• 0: Not available
+• 1- 29: Solution not trustworthy
+• 30-100: PL not verified for this receiver
+configuration
+11 U1 reserved0 - - Reserved
+12 U4 iTow - ms GPS time of week
+16 U4 plPos1 - mm First axis of position protection level value, given in
+coordinate frame of plPosFrame (see plPosFrame field
+for value order), w.r.t. the given target misleading
+information risk (TMIR) of [tmirCoeff * 10^(tmirExp)]
+20 U4 plPos2 - mm Second axis of position protection level value, given
+in coordinate frame of plPosFrame (see plPosFrame
+field for value order), w.r.t. the given target misleading
+information risk (TMIR) of [tmirCoeff * 10^(tmirExp)]
+24 U4 plPos3 - mm Third axis of position protection level value, given in
+coordinate frame of plPosFrame (see plPosFrame field
+for value order), w.r.t. the given target misleading
+information risk (TMIR) of [tmirCoeff * 10^(tmirExp)]
+28 U4 plVel1 - mm/s First axis of velocity protection level value, given in
+coordinate frame of plVelFrame (see plVelFrame field
+for value order), w.r.t. the given target misleading
+information risk (TMIR) of [tmirCoeff * 10^(tmirExp)]
+32 U4 plVel2 - mm/s Second axis of velocity protection level value, given
+in coordinate frame of plVelFrame (see plVelFrame
+field for value order), w.r.t. the given target misleading
+information risk (TMIR) of [tmirCoeff * 10^(tmirExp)]
+36 U4 plVel3 - mm/s Third axis of velocity protection level value, given in
+coordinate frame of plVelFrame (see plVelFrame field
+for value order), w.r.t. the given target misleading
+information risk (TMIR) of [tmirCoeff * 10^(tmirExp)]
+40 U2 plPosHoriz
+Orient
+1e-2 deg Orientation of HorizSemiMajorAxis (see plPosFrame)
+of horizontal ellipse position protection level
+(clockwise degrees from true North), if
+plPosFrame==3; zero otherwise.
+42 U2 plVelHoriz
+Orient
+1e-2 deg Orientation of HorizSemiMajorAxis (see plVelFrame)
+of horizontal ellipse velocity protection level(clockwise
+degrees from true North), if plVelFrame==3; zero
+otherwise.
+44 U4 plTime - ns Time protection level value, w.r.t. the given target
+misleading information risk (TMIR) of [tmirCoeff *
+10^(tmirExp)]
+48 U1[4] reserved1 - - Reserved
+3.15.13 UBX-NAV-POSECEF (0x01 0x01)
+3.15.13.1 Position solution in ECEF
+Message UBX-NAV-POSECEF
+Position solution in ECEF
+Type Periodic/polled
+Comment See important comments concerning validity of position given in section Navigation output filters in the
+integration manual.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 121 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x01 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 I4 ecefX - cm ECEF X coordinate
+8 I4 ecefY - cm ECEF Y coordinate
+12 I4 ecefZ - cm ECEF Z coordinate
+16 U4 pAcc - cm Position Accuracy Estimate
+3.15.14 UBX-NAV-POSLLH (0x01 0x02)
+3.15.14.1 Geodetic position solution
+Message UBX-NAV-POSLLH
+Geodetic position solution
+Type Periodic/polled
+Comment See important comments concerning validity of position given in section Navigation output filters in the
+integration manual.
+This message outputs the Geodetic position in the currently selected ellipsoid. The default is the WGS84
+Ellipsoid, but can be changed with the message CFG-NAVSPG-USE_USRDAT.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x02 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 I4 lon 1e-7 deg Longitude
+8 I4 lat 1e-7 deg Latitude
+12 I4 height - mm Height above ellipsoid
+16 I4 hMSL - mm Height above mean sea level
+20 U4 hAcc - mm Horizontal accuracy estimate
+24 U4 vAcc - mm Vertical accuracy estimate
+3.15.15 UBX-NAV-PVAT (0x01 0x17)
+3.15.15.1 Navigation position velocity attitude time solution
+Message UBX-NAV-PVAT
+Navigation position velocity attitude time solution
+Type Periodic/polled
+Comment This message combines position, velocity, attitude and time solution, including accuracy figures.
+Note that during a leap second there may be more or less than 60 seconds in a minute.
+See description of leap seconds in the integration manual for details.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 122 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x17 116 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 X1 valid - - Validity flags
+bit 0   U:1 validDate - - 1 = valid UTC Date (see section Time validity in the
+integration manual for details)
+bit 1   U:1 validTime - - 1 = valid UTC time of day (see section Time validity in
+the integration manual for details)
+bit 2   U:1 fullyResolved - - 1 = UTC time of day has been fully resolved (no
+seconds uncertainty). Cannot be used to check if time
+is completely solved.
+bit 3   U:1 validMag - - 1 = valid magnetic declination
+6 U2 year - y Year (UTC)
+8 U1 month - month Month, range 1..12 (UTC)
+9 U1 day - d Day of month, range 1..31 (UTC)
+10 U1 hour - h Hour of day, range 0..23 (UTC)
+11 U1 min - min Minute of hour, range 0..59 (UTC)
+12 U1 sec - s Seconds of minute, range 0..60 (UTC)
+13 U1 reserved0 - - Reserved
+14 U1[2] reserved1 - - Reserved
+16 U4 tAcc - ns Time accuracy estimate (UTC)
+20 I4 nano - ns Fraction of second, range -1e9 .. 1e9 (UTC)
+24 U1 fixType - - GNSSfix Type:
+• 0 = no fix
+• 1 = dead reckoning only
+• 2 = 2D-fix
+• 3 = 3D-fix
+• 4 = GNSS + dead reckoning combined
+• 5 = time only fix
+25 X1 flags - - Fix status flags
+bit 0   U:1 gnssFixOK - - 1 = valid fix (i.e within DOP & accuracy masks)
+bit 1   U:1 diffSoln - - 1 = differential corrections were applied
+bit 3   U:1 vehRollValid - - 1 = roll of vehicle is valid, only set if the receiver is in
+sensor fusion mode
+bit 4   U:1 vehPitchValid - - 1 = pitch of vehicle is valid, only set if the receiver is in
+sensor fusion mode
+bit 5   U:1 vehHeading
+Valid
+- - 1 = heading of vehicle is valid, only set if the receiver is
+in sensor fusion mode
+bits 7…6   U:2 carrSoln - - Carrier range solution status:
+• 0 = no carrier range solution
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 123 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+• 1 = carrier range solution with float ambiguities
+• 2 = carrier range solution with fixed ambiguities
+26 X1 flags2 - - Additional flags
+bit 5   U:1 confirmedAvai - - 1 = information about UTC Date and Time of Day
+validity confirmation is available (see section Time
+validity in the integration manual for details)
+bit 6   U:1 confirmedDate - - 1 = UTC Date validity could be confirmed (see section
+Time validity in the integration manual for details)
+bit 7   U:1 confirmedTime - - 1 = UTC Time of Day could be confirmed (see section
+Time validity in the integration manual for details)
+27 U1 numSV - - Number of satellites used in Nav Solution
+28 I4 lon 1e-7 deg Longitude
+32 I4 lat 1e-7 deg Latitude
+36 I4 height - mm Height above ellipsoid
+40 I4 hMSL - mm Height above mean sea level
+44 U4 hAcc - mm Horizontal accuracy estimate
+48 U4 vAcc - mm Vertical accuracy estimate
+52 I4 velN - mm/s NED north velocity
+56 I4 velE - mm/s NED east velocity
+60 I4 velD - mm/s NED down velocity
+64 I4 gSpeed - mm/s Ground Speed (2-D)
+68 U4 sAcc - mm/s Speed accuracy estimate
+72 I4 vehRoll 1e-5 deg Vehicle roll.
+76 I4 vehPitch 1e-5 deg Vehicle pitch.
+80 I4 vehHeading 1e-5 deg Vehicle heading.
+84 I4 motHeading 1e-5 deg Motion heading.
+88 U2 accRoll 1e-2 deg Vehicle roll accuracy (if null, roll angle is not available).
+90 U2 accPitch 1e-2 deg Vehicle pitch accuracy (if null, pitch angle is not
+available).
+92 U2 accHeading 1e-2 deg Vehicle heading accuracy (if null, heading angle is not
+available).
+94 I2 magDec 1e-2 deg Magnetic declination.
+96 U2 magAcc 1e-2 deg Magnetic declination accuracy.
+98 U2 errEllipse
+Orient
+1e-2 deg Orientation of semi-major axis of error ellipse (degrees
+from true north)
+100 U4 errEllipse
+Major
+- mm Semi-major axis of error ellipse
+104 U4 errEllipse
+Minor
+- mm Semi-minor axis of error ellipse
+108 U1[4] reserved2 - - Reserved
+112 U1[4] reserved3 - - Reserved
+3.15.16 UBX-NAV-PVT (0x01 0x07)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 124 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.15.16.1 Navigation position velocity time solution
+Message UBX-NAV-PVT
+Navigation position velocity time solution
+Type Periodic/polled
+Comment This message combines position, velocity and time solution, including accuracy figures.
+Note that during a leap second there may be more or less than 60 seconds in a minute.
+See description of leap seconds in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x07 92 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U2 year - y Year (UTC)
+6 U1 month - month Month, range 1..12 (UTC)
+7 U1 day - d Day of month, range 1..31 (UTC)
+8 U1 hour - h Hour of day, range 0..23 (UTC)
+9 U1 min - min Minute of hour, range 0..59 (UTC)
+10 U1 sec - s Seconds of minute, range 0..60 (UTC)
+11 X1 valid - - Validity flags
+bit 0   U:1 validDate - - 1 = valid UTC Date (see section Time validity in the
+integration manual for details)
+bit 1   U:1 validTime - - 1 = valid UTC time of day (see section Time validity in
+the integration manual for details)
+bit 2   U:1 fullyResolved - - 1 = UTC time of day has been fully resolved (no
+seconds uncertainty). Cannot be used to check if time
+is completely solved.
+bit 3   U:1 validMag - - 1 = valid magnetic declination
+12 U4 tAcc - ns Time accuracy estimate (UTC)
+16 I4 nano - ns Fraction of second, range -1e9 .. 1e9 (UTC)
+20 U1 fixType - - GNSSfix Type:
+• 0 = no fix
+• 1 = dead reckoning only
+• 2 = 2D-fix
+• 3 = 3D-fix
+• 4 = GNSS + dead reckoning combined
+• 5 = time only fix
+21 X1 flags - - Fix status flags
+bit 0   U:1 gnssFixOK - - 1 = valid fix (i.e within DOP & accuracy masks)
+bit 1   U:1 diffSoln - - 1 = differential corrections were applied
+bits 4…2   U:3 psmState - - Power save mode state (see Power management
+section in the integration manual for details.
+• 0 = PSM is not active
+• 1 = Enabled (an intermediate state before
+Acquisition state
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 125 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+• 2 = Acquisition
+• 3 = Tracking
+• 4 = Power Optimized Tracking
+• 5 = Inactive
+bit 5   U:1 headVehValid - - 1 = heading of vehicle is valid, only set if the receiver is
+in sensor fusion mode
+bits 7…6   U:2 carrSoln - - Carrier phase range solution status:
+• 0 = no carrier phase range solution
+• 1 = carrier phase range solution with floating
+ambiguities
+• 2 = carrier phase range solution with fixed
+ambiguities
+(not supported for protocol versions less than 20.00)
+22 X1 flags2 - - Additional flags
+bit 5   U:1 confirmedAvai - - 1 = information about UTC Date and Time of Day
+validity confirmation is available (see section Time
+validity in the integration manual for details)
+This flag is only supported in Protocol Versions 19.00,
+19.10, 20.10, 20.20, 20.30, 22.00, 23.00, 23.01, 27 and
+28.
+bit 6   U:1 confirmedDate - - 1 = UTC Date validity could be confirmed (see section
+Time validity in the integration manual for details)
+bit 7   U:1 confirmedTime - - 1 = UTC Time of Day could be confirmed (see section
+Time validity in the integration manual for details)
+23 U1 numSV - - Number of satellites used in Nav Solution
+24 I4 lon 1e-7 deg Longitude
+28 I4 lat 1e-7 deg Latitude
+32 I4 height - mm Height above ellipsoid
+36 I4 hMSL - mm Height above mean sea level
+40 U4 hAcc - mm Horizontal accuracy estimate
+44 U4 vAcc - mm Vertical accuracy estimate
+48 I4 velN - mm/s NED north velocity
+52 I4 velE - mm/s NED east velocity
+56 I4 velD - mm/s NED down velocity
+60 I4 gSpeed - mm/s Ground Speed (2-D)
+64 I4 headMot 1e-5 deg Heading of motion (2-D)
+68 U4 sAcc - mm/s Speed accuracy estimate
+72 U4 headAcc 1e-5 deg Heading accuracy estimate (both motion and vehicle)
+76 U2 pDOP 0.01 - Position DOP
+78 X2 flags3 - - Additional flags
+bit 0   U:1 invalidLlh - - 1 = Invalid lon, lat, height and hMSL (applicable to
+heading products only)
+bits 4…1   U:4 lastCorrection
+Age
+- - Age of the most recently received differential
+correction:
+• 0 = Not available
+• 1 = Age between 0 and 1 second
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 126 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+• 2 = Age between 1 (inclusive) and 2 seconds
+• 3 = Age between 2 (inclusive) and 5 seconds
+• 4 = Age between 5 (inclusive) and 10 seconds
+• 5 = Age between 10 (inclusive) and 15 seconds
+• 6 = Age between 15 (inclusive) and 20 seconds
+• 7 = Age between 20 (inclusive) and 30 seconds
+• 8 = Age between 30 (inclusive) and 45 seconds
+• 9 = Age between 45 (inclusive) and 60 seconds
+• 10 = Age between 60 (inclusive) and 90 seconds
+• 11 = Age between 90 (inclusive) and 120 seconds
+• >=12 = Age greater or equal than 120 seconds
+bit 13   U:1 authTime - - Flag that indicates if the output time has been
+validated against an external trusted time source
+• 0 = Time is not authenticated
+• 1 = Time is authenticated
+bit 14   U:1 nmaFixStatus - - Flag assigned to a fix that has been computed
+mixing satellites with data authenticated through
+Navigation Message Authentication (NMA) methods
+and satellites using unauthenticated data. The fix
+is flagged as Verified when internal cross-checks
+validates the unauthenticated signals against the
+authenticated ones. Note that Not Verified status
+does not imply directly spoofing attacks, to identify
+spoofing alerts refer to UBX-SEC-SIG.
+• 0 = Not Verified: The mixed solution does not
+agree with the NMA authenticated data or the
+comparison could not be performed, e.g., not
+enough authenticated SVs to extrapolate the
+result or cryptographic data not decoded yet
+• 1 = Verified: The mixed solution agrees with the
+NMA authenticated data
+Currently, the only existing NMA method is Galileo
+Open Service Navigation Message Authentication
+(OSNMA) protocol.
+80 U1[4] reserved0 - - Reserved
+84 I4 headVeh 1e-5 deg Heading of vehicle (2-D), this is only valid when
+headVehValid is set, otherwise the output is set to the
+heading of motion
+88 I2 magDec 1e-2 deg Magnetic declination. Only supported in ADR 4.10 and
+later.
+90 U2 magAcc 1e-2 deg Magnetic declination accuracy. Only supported in ADR
+4.10 and later.
+3.15.17 UBX-NAV-RELPOSNED (0x01 0x3c)
+3.15.17.1 Relative positioning information in NED frame
+Message UBX-NAV-RELPOSNED
+Relative positioning information in NED frame
+Type Periodic/polled
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 127 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Comment This message contains the relative position vector from the reference station to the rover, including accuracy
+figures, in the local topological system defined at the reference station.
+☞ The NED frame is defined as the local topological system at the reference station. The relative position
+vector components in this message, along with their associated accuracies, are given in that local topological
+system.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x3c 64 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1 reserved0 - - Reserved
+2 U2 refStationId - - Reference station ID. Must be in the range 0..4095.
+4 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+8 I4 relPosN - cm North component of relative position vector
+12 I4 relPosE - cm East component of relative position vector
+16 I4 relPosD - cm Down component of relative position vector
+20 I4 relPosLength - cm Length of the relative position vector
+24 I4 relPosHeading 1e-5 deg Heading of the relative position vector
+28 U1[4] reserved1 - - Reserved
+32 I1 relPosHPN 0.1 mm High-precision North component of relative position
+vector.
+Must be in the range -99 to +99.
+The full North component of the relative position
+vector, in units of cm, is given by
+relPosN + (relPosHPN * 1e-2)
+33 I1 relPosHPE 0.1 mm High-precision East component of relative position
+vector.
+Must be in the range -99 to +99.
+The fullEast component of the relative position vector,
+in units of cm, is given by
+relPosE + (relPosHPE * 1e-2)
+34 I1 relPosHPD 0.1 mm High-precision Down component of relative position
+vector.
+Must be in the range -99 to +99.
+The full Down component of the relative position
+vector, in units of cm, is given by
+relPosD + (relPosHPD * 1e-2)
+35 I1 relPosHP
+Length
+0.1 mm High-precision component of the length of the relative
+position vector.
+Must be in the range -99 to +99.
+The full length of the relative position vector, in units
+of cm, is given by
+relPosLength + (relPosHPLength * 1e-2)
+36 U4 accN 0.1 mm Accuracy of relative position North component
+40 U4 accE 0.1 mm Accuracy of relative position East component
+44 U4 accD 0.1 mm Accuracy of relative position Down component
+48 U4 accLength 0.1 mm Accuracy of length of the relative position vector
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 128 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+52 U4 accHeading 1e-5 deg Accuracy of heading of the relative position vector
+56 U1[4] reserved2 - - Reserved
+60 X4 flags - - Flags
+bit 0   U:1 gnssFixOK - - A valid fix (i.e within DOP & accuracy masks)
+bit 1   U:1 diffSoln - - 1 if differential corrections were applied
+bit 2   U:1 relPosValid - - 1 if relative position components and accuracies are
+valid and, in moving base mode only, if baseline is valid
+bits 4…3   U:2 carrSoln - - Carrier phase range solution status:
+• 0 = no carrier phase range solution
+• 1 = carrier phase range solution with floating
+ambiguities
+• 2 = carrier phase range solution with fixed
+ambiguities
+bit 5   U:1 isMoving - - 1 if the receiver is operating in moving base mode
+bit 6   U:1 refPosMiss - - 1 if extrapolated reference position was used to
+computemoving base solution this epoch.(Flag set for
+protocol versions 27.10, and 27.11, and 31.11)
+bit 7   U:1 refObsMiss - - 1 if extrapolated reference observations were used to
+computemoving base solution this epoch.(Flag set for
+protocol versions 27.10, and 27.11, and 31.11)
+bit 8   U:1 relPosHeading
+Valid
+- - 1 if relPosHeading is valid
+bit 9   U:1 relPos
+Normalized
+- - 1 if the components of the relative position vector
+(including the high-precision parts) are normalized
+3.15.18 UBX-NAV-RESETODO (0x01 0x10)
+3.15.18.1 Reset odometer
+Message UBX-NAV-RESETODO
+Reset odometer
+Type Command
+Comment This message resets the traveled distance computed by the odometer (see UBX-NAV-ODO).
+UBX-ACK-ACK or UBX-ACK-NAK are returned to indicate success or failure.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x10 0 see below CK_A CK_B
+Payload This message has no payload.
+3.15.19 UBX-NAV-SAT (0x01 0x35)
+3.15.19.1 Satellite information
+Message UBX-NAV-SAT
+Satellite information
+Type Periodic/polled
+Comment This message displays information about SVs that are either known to be visible or currently tracked by the
+receiver. All signal related information corresponds to the subset of signals specified in Signal Identifiers.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 129 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x35 8 + numSvs·12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x01 for this version)
+5 U1 numSvs - - Number of satellites
+6 U1[2] reserved0 - - Reserved
+Start of repeated group (numSvs times)
+8 + n·12 U1 gnssId - - GNSS identifier (see Satellite Numbering) for
+assignment
+9 + n·12 U1 svId - - Satellite identifier (see Satellite Numbering) for
+assignment
+10 + n·12 U1 cno - dBHz Carrier to noise ratio (signal strength)
+11 + n·12 I1 elev - deg Elevation (range: +/-90), unknown if out of range
+12 + n·12 I2 azim - deg Azimuth (range 0-360), unknown if elevation is out of
+range
+14 + n·12 I2 prRes 0.1 m Pseudorange residual
+16 + n·12 X4 flags - - Bitmask
+bits 2…0   U:3 qualityInd - - Signal quality indicator:
+• 0 = no signal
+• 1 = searching signal
+• 2 = signal acquired
+• 3 = signal detected but unusable
+• 4 = code locked and time synchronized
+• 5, 6, 7 = code and carrier locked and time
+synchronized
+bit 3   U:1 svUsed - - 1 = Signal in the subset specified in Signal Identifiers
+is currently being used for navigation
+bits 5…4   U:2 health - - Signal health flag:
+• 0 = unknown
+• 1 = healthy
+• 2 = unhealthy
+bit 6   U:1 diffCorr - - 1 = differential correction data is available for this SV
+bit 7   U:1 smoothed - - 1 = carrier smoothed pseudorange used
+bits 10…8   U:3 orbitSource - - Orbit source:
+• 0 = no orbit information is available for this SV
+• 1 = ephemeris is used
+• 2 = almanac is used
+• 3 = AssistNow Offline orbit is used
+• 4 = AssistNow Autonomous orbit is used
+• 5, 6, 7 = other orbit information is used
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 130 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 11   U:1 ephAvail - - 1 = ephemeris is available for this SV
+bit 12   U:1 almAvail - - 1 = almanac is available for this SV
+bit 13   U:1 anoAvail - - 1 = AssistNow Offline data is available for this SV
+bit 14   U:1 aopAvail - - 1 = AssistNow Autonomous data is available for this
+SV
+bit 16   U:1 sbasCorrUsed - - 1 = SBAS corrections have been used for a signal in the
+subset specified in Signal Identifiers
+bit 17   U:1 rtcmCorrUsed - - 1 = RTCM corrections have been used for a signal in
+the subset specified in Signal Identifiers
+bit 18   U:1 slasCorrUsed - - 1 = QZSSSLAScorrections have been used for a signal
+in the subset specified in Signal Identifiers
+bit 19   U:1 spartnCorrUsed - - 1 = SPARTN corrections have been used for a signal in
+the subset specified in Signal Identifiers
+bit 20   U:1 prCorrUsed - - 1 = Pseudorange corrections have been used for a
+signal in the subset specified in Signal Identifiers
+bit 21   U:1 crCorrUsed - - 1 = Carrier range corrections have been used for a
+signal in the subset specified in Signal Identifiers
+bit 22   U:1 doCorrUsed - - 1 = Range rate (Doppler) corrections have been used
+for a signal in the subset specified in Signal Identifiers
+bit 23   U:1 clasCorrUsed - - 1 = CLAS corrections have been used for a signal in the
+subset specified in Signal Identifiers
+End of repeated group (numSvs times)
+3.15.20 UBX-NAV-SBAS (0x01 0x32)
+3.15.20.1 SBAS status data
+Message UBX-NAV-SBAS
+SBAS status data
+Type Periodic/polled
+Comment This message outputs the status of the SBAS sub system
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x32 12 + cnt·12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See the description of iTOW for details.
+4 U1 geo - - PRN Number of the GEO where correction and
+integrity data is used from
+5 U1 mode - - SBAS Mode
+• 0 Disabled
+• 1 Enabled integrity
+• 3 Enabled test mode
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 131 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+6 I1 sys - - SBAS System (WAAS/EGNOS/...)
+• -1 Unknown
+• 0 WAAS
+• 1 EGNOS
+• 2 MSAS
+• 3 GAGAN
+• 16 GPS
+7 X1 service - - SBAS Services available
+bit 0   U:1 Ranging - - GEO may be used as ranging source
+bit 1   U:1 Corrections - - GEO is providing correction data
+bit 2   U:1 Integrity - - GEO is providing integrity
+bit 3   U:1 Testmode - - GEO is in test mode
+bit 4   U:1 Bad - - Problem with signal or broadcast data indicated
+8 U1 cnt - - Number of SV data following
+9 X1 statusFlags - - SBAS status flags
+bits 1…0   U:2 integrityUsed - - SBAS integrity used
+• 0 = Unknown
+• 1 = Integrity information is not available or SBAS
+integrity is not enabled
+• 2 = Receiver uses only GPS satellites for which
+integrity information is available
+10 U1[2] reserved0 - - Reserved
+Start of repeated group (cnt times)
+12 + n·12 U1 svid - - SV ID
+13 + n·12 U1 reserved1 - - Reserved
+14 + n·12 U1 udre - - Monitoring status
+15 + n·12 U1 svSys - - System (WAAS/EGNOS/...)
+same as SYS
+16 + n·12 U1 svService - - Services available
+same as SERVICE
+17 + n·12 U1 reserved2 - - Reserved
+18 + n·12 I2 prc - cm Pseudo Range correction in [cm]
+20 + n·12 U1[2] reserved3 - - Reserved
+22 + n·12 I2 ic - cm Ionosphere correction in [cm]
+End of repeated group (cnt times)
+3.15.21 UBX-NAV-SIG (0x01 0x43)
+3.15.21.1 Signal information
+Message UBX-NAV-SIG
+Signal information
+Type Periodic/polled
+Comment This message displays information about signals currently tracked or searched by the receiver.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 132 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x43 8 + numSigs·16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1 numSigs - - Number of signals
+6 U1[2] reserved0 - - Reserved
+Start of repeated group (numSigs times)
+8 + n·16 U1 gnssId - - GNSS identifier (see Satellite Numbering) for
+assignment
+9 + n·16 U1 svId - - Satellite identifier (see Satellite Numbering) for
+assignment
+10 + n·16 U1 sigId - - New style signal identifier (see Signal Identifiers)
+11 + n·16 U1 freqId - - Only used for GLONASS: This is the frequency slot + 7
+(range from 0 to 13)
+12 + n·16 I2 prRes 0.1 m Pseudorange residual
+14 + n·16 U1 cno - dBHz Carrier-to-noise density ratio (signal strength)
+15 + n·16 U1 qualityInd - - Signal quality indicator:
+• 0 = no signal
+• 1 = searching signal
+• 2 = signal acquired
+• 3 = signal detected but unusable
+• 4 = code locked and time synchronized
+• 5, 6, 7 = code and carrier locked and time
+synchronized
+16 + n·16 U1 corrSource - - Correction source:
+• 0 = no corrections
+• 1 = SBAS corrections
+• 2 = BeiDou corrections
+• 3 = RTCM2 corrections
+• 4 = RTCM3 OSR corrections
+• 5 = RTCM3 SSR corrections
+• 6 = QZSS SLAS corrections
+• 7 = SPARTN corrections
+• 8 = CLAS corrections
+17 + n·16 U1 ionoModel - - Ionospheric model used:
+• 0 = no model
+• 1 = Klobuchar model transmitted by GPS
+• 2 = SBAS model
+• 3 = Klobuchar model transmitted by BeiDou
+• 8 = Iono delay derived from dual frequency
+observations
+18 + n·16 X2 sigFlags - - Signal related flags
+bits 1…0   U:2 health - - Signal health flag:
+• 0 = unknown
+• 1 = healthy
+• 2 = unhealthy
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 133 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 2   U:1 prSmoothed - - 1 = Pseudorange has been smoothed
+bit 3   U:1 prUsed - - 1 = Pseudorange has been used for this signal
+bit 4   U:1 crUsed - - 1 = Carrier range has been used for this signal
+bit 5   U:1 doUsed - - 1 = Range rate (Doppler) has been used for this signal
+bit 6   U:1 prCorrUsed - - 1 = Pseudorange corrections have been used for this
+signal
+bit 7   U:1 crCorrUsed - - 1 = Carrier range corrections have been used for this
+signal
+bit 8   U:1 doCorrUsed - - 1 = Range rate (Doppler) corrections have been used
+for this signal
+bit 9   U:1 authStatus - - Authentication status of the navigation data used to
+compute the satellite's position in current navigation
+epoch. If the authentication fails, the navigation data
+is not used so the authentication status in this
+message can take only two values:
+• 0 = Unknown
+• 1 = Authenticated
+Note that currently the only data authentication
+function is provided by Galileo Open Service
+Navigation Message Authentication (OSNMA)
+protocol for E1 I/NAV message.
+20 + n·16 U1[4] reserved1 - - Reserved
+End of repeated group (numSigs times)
+3.15.22 UBX-NAV-SLAS (0x01 0x42)
+3.15.22.1 QZSS L1S SLAS status data
+Message UBX-NAV-SLAS
+QZSS L1S SLAS status data
+Type Periodic/polled
+Comment This message outputs the status of the QZSS L1S SLAS sub system
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x42 20 + cnt·8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See the description of iTOW for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1[3] reserved0 - - Reserved
+8 I4 gmsLon 1e-3 deg Longitude of the used ground monitoring station
+12 I4 gmsLat 1e-3 deg Latitude of the used ground monitoring station
+16 U1 gmsCode - - Code of the used ground monitoring station according
+to the QZSS SLAS Interface Specification, available
+from qzss.go.jp/en/
+17 U1 qzssSvId - - Satellite identifier of the QZS/GEO whose correction
+data is used (see Satellite Numbering)
+18 X1 serviceFlags - - Flags regarding SLAS service
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 134 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 0   U:1 gmsAvailable - - 1 = Ground monitoring station available
+bit 1   U:1 qzssSv
+Available
+- - 1 = Correction providing QZSS SV available
+bit 2   U:1 testMode - - 1 = Currently used QZSS SV in test mode
+19 U1 cnt - - Number of pseudorange corrections following
+Start of repeated group (cnt times)
+20 + n·8 U1 gnssId - - GNSS identifier (see Satellite Numbering)
+21 + n·8 U1 svId - - Satellite identifier (see Satellite Numbering)
+22 + n·8 U1 reserved1 - - Reserved
+23 + n·8 U1[3] reserved2 - - Reserved
+26 + n·8 I2 prc - cm Pseudorange correction
+End of repeated group (cnt times)
+3.15.23 UBX-NAV-STATUS (0x01 0x03)
+3.15.23.1 Receiver navigation status
+Message UBX-NAV-STATUS
+Receiver navigation status
+Type Periodic/polled
+Comment See important comments concerning the validity of the position given in section Navigation output filters in
+the Integration manual.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x03 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+For details, see section iTOW timestamps in the
+integration manual.
+4 U1 gpsFix - - GPSfix Type, this value does not qualify a fix as valid
+and within the limits. See note on flag gpsFixOk below.
+• 0x00 = no fix
+• 0x01 = dead reckoning only
+• 0x02 = 2D-fix
+• 0x03 = 3D-fix
+• 0x04 = GPS + dead reckoning combined
+• 0x05 = Time only fix
+• 0x06..0xff = reserved
+5 X1 flags - - Navigation Status Flags
+bit 0   U:1 gpsFixOk - - 1 = position and velocity valid and within DOP and ACC
+Masks.
+bit 1   U:1 diffSoln - - 1 = differential corrections were applied
+bit 2   U:1 wknSet - - 1 = Week Number valid (for details, see section Time
+validity in the Integration manual)
+bit 3   U:1 towSet - - 1 = Time of Week valid (for details, see section Time
+validity in the integration manual)
+6 X1 fixStat - - Fix Status Information
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 135 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 0   U:1 diffCorr - - 1 = differential corrections available
+bit 1   U:1 carrSolnValid - - 1 = valid carrSoln
+bits 7…6   U:2 mapMatching - - map matching status:
+• 00: none
+• 01: valid but not used, i.e. map matching data was
+received, but was too old
+• 10: valid and used, map matching data was
+applied
+• 11: valid and used, map matching data was
+applied. In case of sensor unavailability map
+matching data enables dead reckoning. This
+requires map matched latitude/longitude or
+heading data.
+7 X1 flags2 - - further information about navigation output
+bits 1…0   U:2 psmState - - power save mode state (not supported for protocol
+versions less than 13.01)
+• 0 = ACQUISITION [or when psm disabled]
+• 1 = TRACKING
+• 2 = POWER OPTIMIZED TRACKING
+• 3 = INACTIVE
+bits 4…3   U:2 spoofDetState - - Spoofing detection state (not supported for protocol
+versions less than 18.00)
+• 0: Unknown or deactivated
+• 1: No spoofing indicated
+• 2: Spoofing indicated
+• 3: Multiple spoofing indications
+Note that the spoofing state value only reflects the
+detector state for the current navigation epoch. As
+spoofing can be detected most easily at the transition
+from real signal to spoofing signal, this is also where
+the detector is triggered the most. I.e. a value of 1 - No
+spoofing indicated does not mean that the receiver is
+not spoofed, it simply states that the detector was not
+triggered in this epoch.
+bits 7…6   U:2 carrSoln - - Carrier phase range solution status:
+• 0 = no carrier phase range solution
+• 1 = carrier phase range solution with floating
+ambiguities
+• 2 = carrier phase range solution with fixed
+ambiguities
+8 U4 ttff - ms Time to first fix (millisecond time tag)
+12 U4 msss - ms Milliseconds since startup / reset
+3.15.24 UBX-NAV-TIMEBDS (0x01 0x24)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 136 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.15.24.1 BeiDou time solution
+Message UBX-NAV-TIMEBDS
+BeiDou time solution
+Type Periodic/polled
+Comment This message reports the precise BDS time of the most recent navigation solution including validity flags and
+an accuracy estimate.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x24 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U4 SOW - s BDS time of week (rounded to seconds)
+8 I4 fSOW - ns Fractional part of SOW (range: +/-500000000).
+The precise BDS time of week in seconds is:
+SOW + fSOW * 1e-9
+12 I2 week - - BDS week number of the navigation epoch
+14 I1 leapS - s BDS leap seconds (BDS-UTC)
+15 X1 valid - - Validity Flags
+bit 0   U:1 sowValid - - 1 = Valid SOW and fSOW (see section Time validity in
+the integration manual for details)
+bit 1   U:1 weekValid - - 1 = Valid week (see section Time validity in the
+integration manual for details)
+bit 2   U:1 leapSValid - - 1 = Valid leap second
+16 U4 tAcc - ns Time Accuracy Estimate
+3.15.25 UBX-NAV-TIMEGAL (0x01 0x25)
+3.15.25.1 Galileo time solution
+Message UBX-NAV-TIMEGAL
+Galileo time solution
+Type Periodic/polled
+Comment This message reports the precise Galileo time of the most recent navigation solution including validity flags
+and an accuracy estimate.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x25 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U4 galTow - s Galileo time of week (rounded to seconds)
+8 I4 fGalTow - ns Fractional part of the Galileo time of week (range:
++/-500000000).
+The precise Galileo time of week in seconds is:
+galTow + fGalTow * 1e-9
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 137 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+12 I2 galWno - - Galileo week number
+14 I1 leapS - s Galileo leap seconds (Galileo-UTC)
+15 X1 valid - - Validity Flags
+bit 0   U:1 galTowValid - - 1 = Valid galTow and fGalTow (see sectionTime validity
+in the integration manual for details)
+bit 1   U:1 galWnoValid - - 1 = Valid galWno (see section Time validity in the
+integration manual for details)
+bit 2   U:1 leapSValid - - 1 = Valid leapS
+16 U4 tAcc - ns Time Accuracy Estimate
+3.15.26 UBX-NAV-TIMEGLO (0x01 0x23)
+3.15.26.1 GLONASS time solution
+Message UBX-NAV-TIMEGLO
+GLONASS time solution
+Type Periodic/polled
+Comment This message reports the precise GLO time of the most recent navigation solution including validity flags and
+an accuracy estimate.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x23 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U4 TOD - s GLONASS time of day (rounded to integer seconds)
+8 I4 fTOD - ns Fractional part of TOD (range: +/-500000000).
+The precise GLONASS time of day in seconds is:
+TOD + fTOD * 1e-9
+12 U2 Nt - days Current date (range: 1-1461), starting at 1 from the
+1st Jan of the year indicated by N4 and ending at 1461
+at the 31st Dec of the third year after that indicated
+by N4
+14 U1 N4 - - Four-year interval number starting from 1996
+(1=1996, 2=2000, 3=2004...)
+15 X1 valid - - Validity flags
+bit 0   U:1 todValid - - 1 = Valid TOD and fTOD (see section Time validity in
+the integration manual for details)
+bit 1   U:1 dateValid - - 1 = Valid N4 and Nt (see section Time validity in the
+integration manual for details)
+16 U4 tAcc - ns Time Accuracy Estimate
+3.15.27 UBX-NAV-TIMEGPS (0x01 0x20)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 138 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.15.27.1 GPS time solution
+Message UBX-NAV-TIMEGPS
+GPS time solution
+Type Periodic/polled
+Comment This message reports the precise GPS time of the most recent navigation solution including validity flags and
+an accuracy estimate.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x20 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 I4 fTOW - ns Fractional part of iTOW (range: +/-500000).
+The precise GPS time of week in seconds is:
+(iTOW * 1e-3) + (fTOW * 1e-9)
+8 I2 week - - GPS week number of the navigation epoch
+10 I1 leapS - s GPS leap seconds (GPS-UTC)
+11 X1 valid - - Validity Flags
+bit 0   U:1 towValid - - 1 = Valid GPS time of week (iTOW & fTOW, (see section
+Time validity in the integration manual for details)
+bit 1   U:1 weekValid - - 1 = Valid GPS week number (see section Time validity
+in the integration manual for details)
+bit 2   U:1 leapSValid - - 1 = Valid GPS leap seconds
+12 U4 tAcc - ns Time Accuracy Estimate
+3.15.28 UBX-NAV-TIMELS (0x01 0x26)
+3.15.28.1 Leap second event information
+Message UBX-NAV-TIMELS
+Leap second event information
+Type Periodic/polled
+Comment Information about the upcoming leap second event if one is scheduled.
+Note: Many sources of leap second information provide the week number of a leap second event as an 8-bit
+unsigned number. For the upcoming leap second events, this can be resolved and displayed in this message.
+However, for the previous leap second events decoded from these sources, there is an inherent ambiguity of
+256 weeks. Therefore, when the time since the previous event is more than 256 weeks, the dateOfLsGpsWn
+and timeToLsEvent parameters may provide incorrect information.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x26 24 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U1 version - - Message version (0x00 for this version)
+5 U1[3] reserved0 - - Reserved
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 139 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+8 U1 srcOfCurrLs - - Information source for the current number of leap
+seconds.
+• 0 = Default (hardcoded in the firmware, can be
+outdated)
+• 1 = Derived from time difference between GPS
+and GLONASS time
+• 2 = GPS
+• 3 = SBAS
+• 4 = BeiDou
+• 5 = Galileo
+• 6 = Aided data
+• 7 = Configured
+• 8 = NavIC
+• 255 = Unknown
+9 I1 currLs - s Current number of leap seconds since start of GPS
+time (Jan 6, 1980). It reflects how much GPS time is
+ahead of UTC time. Galileo number of leap seconds is
+the same as GPS. BeiDou number of leap seconds is 14
+less than GPS. GLONASS follows UTC time, so no leap
+seconds.
+10 U1 srcOfLsChange - - Information source for the future leap second event.
+• 0 = No source
+• 2 = GPS
+• 3 = SBAS
+• 4 = BeiDou
+• 5 = Galileo
+• 6 = GLONASS
+• 7 = NavIC
+11 I1 lsChange - s Future leap second change if one is scheduled. +1 =
+positive leap second, -1 = negative leap second, 0 = no
+future leap second event scheduled or no information
+available. If the value is 0, then the amount of leap
+seconds did not change and the event should be
+ignored.
+12 I4 timeToLsEvent - s Number of seconds until the next leap second event,
+or from the last leap second event if no future
+event scheduled. If > 0 event is in the future, = 0
+event is now, < 0 event is in the past. Valid only if
+validTimeToLsEvent = 1.
+16 U2 dateOfLsGps
+Wn
+- - GPS week number (WN) of the next leap second event
+or the last one if no future event scheduled. Valid only
+if validTimeToLsEvent = 1.
+18 U2 dateOfLsGps
+Dn
+- - GPS day of week number (DN) for the next leap second
+event or the last one if no future event scheduled. Valid
+only if validTimeToLsEvent = 1. (GPS and Galileo DN:
+from 1 = Sun to 7 = Sat. BeiDou DN: from 0 = Sun to 6
+= Sat.)
+20 U1[3] reserved1 - - Reserved
+23 X1 valid - - Validity flags
+bit 0   U:1 validCurrLs - - 1 = Valid current number of leap seconds value.
+bit 1   U:1 validTimeToLs
+Event
+- - 1 = Valid time to next leap second event or from the
+last leap second event if no future event scheduled.
+3.15.29 UBX-NAV-TIMEQZSS (0x01 0x27)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 140 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.15.29.1 QZSS time solution
+Message UBX-NAV-TIMEQZSS
+QZSS time solution
+Type Periodic/polled
+Comment This message reports the precise QZSS time of the most recent navigation solution including validity flags
+and an accuracy estimate.
+See the Clocks and time section in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x27 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+4 U4 qzssTow - s QZSS time of week (rounded to seconds)
+8 I4 fQzssTow - ns Fractional part of QZSS time of week (range:
++/-500000000).
+The precise QZSS time of week in seconds is:
+qzssTow + (fQzssTow * 1e-9)
+12 I2 qzssWno - - QZSS week number of the navigation epoch
+14 I1 leapS - s QZSS leap seconds (QZSS-UTC)
+15 X1 valid - - Validity Flags
+bit 0   U:1 qzssTowValid - - 1 = Valid QZSS time of week (qzssTow and fQzssTow)
+bit 1   U:1 qzssWnoValid - - 1 = Valid QZSS week number
+bit 2   U:1 leapSValid - - 1 = Valid QZSS leap seconds
+16 U4 tAcc - ns Time Accuracy Estimate
+3.15.30 UBX-NAV-TIMEUTC (0x01 0x21)
+3.15.30.1 UTC time solution
+Message UBX-NAV-TIMEUTC
+UTC time solution
+Type Periodic/polled
+Comment Note that during a leap second there may be more or less than 60 seconds in a minute.
+See the description of leap seconds in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x21 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 U4 tAcc - ns Time accuracy estimate (UTC)
+8 I4 nano - ns Fraction of second, range -1e9 .. 1e9 (UTC)
+12 U2 year - y Year, range 1999..2099 (UTC)
+14 U1 month - month Month, range 1..12 (UTC)
+15 U1 day - d Day of month, range 1..31 (UTC)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 141 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+16 U1 hour - h Hour of day, range 0..23 (UTC)
+17 U1 min - min Minute of hour, range 0..59 (UTC)
+18 U1 sec - s Seconds of minute, range 0..60 (UTC)
+19 X1 valid - - Validity Flags
+bit 0   U:1 validTOW - - 1 = Valid Time of Week (see section Time validity in the
+integration manual for details)
+bit 1   U:1 validWKN - - 1= ValidWeekNumber (see sectionTime validity inthe
+integration manual for details)
+bit 2   U:1 validUTC - - 1 = Valid UTC Time
+bit 3   U:1 authStatus - - Indicates if the parameters used to convert GNSStime
+into UTC time have been authenticated.
+• 0 = Unknown
+• 1 = Authenticated
+Note that currently the only data authentication
+function is provided by Galileo Open Service
+Navigation Message Authentication (OSNMA)
+protocol for E1 I/NAV message. Systems other than
+EU UTC can be authenticated indirectly only using the
+above information.
+bits 7…4   U:4 utcStandard - - UTC standard identifier. (Not supported for protocol
+versions less than 15.00)
+• 0 = Information not available
+• 1 = Communications Research Labratory (CRL),
+Tokyo, Japan
+• 2 = National Institute of Standards and
+Technology (NIST)
+• 3 = U.S. Naval Observatory (USNO)
+• 4 = International Bureau of Weights and
+Measures (BIPM)
+• 5 = European laboratories
+• 6 = Former Soviet Union (SU)
+• 7 = National Time Service Center (NTSC), China
+• 8 = National Physics Laboratory India (NPLI)
+• 15 = Unknown
+3.15.31 UBX-NAV-VELECEF (0x01 0x11)
+3.15.31.1 Velocity solution in ECEF
+Message UBX-NAV-VELECEF
+Velocity solution in ECEF
+Type Periodic/polled
+Comment See important comments concerning validity of position given in section Navigation output filters in the
+integration manual.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x11 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 142 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 I4 ecefVX - cm/s ECEF X velocity
+8 I4 ecefVY - cm/s ECEF Y velocity
+12 I4 ecefVZ - cm/s ECEF Z velocity
+16 U4 sAcc - cm/s Speed accuracy estimate
+3.15.32 UBX-NAV-VELNED (0x01 0x12)
+3.15.32.1 Velocity solution in NED frame
+Message UBX-NAV-VELNED
+Velocity solution in NED frame
+Type Periodic/polled
+Comment See important comments concerning validity of position given in section Navigation output filters in the
+integration manual.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x01 0x12 36 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 iTOW - ms GPS time of week of the navigation epoch.
+See section iTOW timestamps in the integration
+manual for details.
+4 I4 velN - cm/s North velocity component
+8 I4 velE - cm/s East velocity component
+12 I4 velD - cm/s Down velocity component
+16 U4 speed - cm/s Speed (3-D)
+20 U4 gSpeed - cm/s Ground speed (2-D)
+24 I4 heading 1e-5 deg Heading of motion 2-D
+28 U4 sAcc - cm/s Speed accuracy Estimate
+32 U4 cAcc 1e-5 deg Course / Heading accuracy estimate

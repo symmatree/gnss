@@ -1,0 +1,658 @@
+3.14 UBX-MON (0x0a)
+The messages in the UBX-MON class are used to report the receiver status, such as hardware status
+or I/O subsystem statistics.
+3.14.1 UBX-MON-COMMS (0x0a 0x36)
+3.14.1.1 Communication port information
+Message UBX-MON-COMMS
+Communication port information
+Type Periodic/polled
+Comment Consolidated communications information for all ports. The size of the message is determined by the number
+of ports that are in use on the receiver. A port is only included if communication, either send or receive, has
+been initiated on that port.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x36 8 + nPorts·40 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 nPorts - - Number of ports included
+2 X1 txErrors - - TX error bitmask
+bit 0   U:1 mem - - Memory Allocation error
+bit 1   U:1 alloc - - Allocation error (TX buffer full)
+bits 4…2   U:3 outputPort - - Output port: Reports the port from which this
+message was output from.
+• 0 = N/A
+• 1 = I2C
+• 2 = UART1
+• 3 = UART2
+• 4 = USB
+• 5 = SPI
+3 U1 reserved0 - - Reserved
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 98 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+4 U1[4] protIds - The identifiers of the protocols reported in the msgs
+array. 0: UBX, 1: NMEA, 2: RTCM2, 5: RTCM3, 6:
+SPARTN, 0xFF: No protocol reported.
+Start of repeated group (nPorts times)
+8 + n·40 U2 portId - - Unique identifier for the port. See section
+Communications ports in the integration manual for
+details.
+10 + n·40 U2 txPending - bytes Number of bytes pending in transmitter buffer
+12 + n·40 U4 txBytes - bytes Number of bytes ever sent
+16 + n·40 U1 txUsage - % Maximum usage transmitter buffer during the last
+sysmon period
+17 + n·40 U1 txPeakUsage - % Maximum usage transmitter buffer
+18 + n·40 U2 rxPending - bytes Number of bytes in receiver buffer
+20 + n·40 U4 rxBytes - bytes Number of bytes ever received
+24 + n·40 U1 rxUsage - % Maximum usage receiver buffer during the last
+sysmon period
+25 + n·40 U1 rxPeakUsage - % Maximum usage receiver buffer
+26 + n·40 U2 overrunErrs - - Number of 100 ms timeslots with overrun errors
+28 + n·40 U2[4] msgs - msg Number of successfully parsed messages for each
+protocol.The reported protocols are identified through
+the protIds field.
+36 + n·40 U1[8] reserved1 - - Reserved
+44 + n·40 U4 skipped - bytes Number of skipped bytes
+End of repeated group (nPorts times)
+3.14.2 UBX-MON-GNSS (0x0a 0x28)
+3.14.2.1 Information message major GNSS selection
+Message UBX-MON-GNSS
+Information message major GNSS selection
+Type Polled
+Comment This message reports major GNSS selection. It does this by means of bit masks in U1 fields. Each bit in a bit
+mask corresponds to one major GNSS. Augmentation systems are not reported.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x28 8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 X1 supported - - A bit mask showing the major GNSS that can be
+supported by this receiver
+bit 0   U:1 GPSSup - - GPS is supported
+bit 1   U:1 GlonassSup - - GLONASS is supported
+bit 2   U:1 BeidouSup - - BeiDou is supported
+bit 3   U:1 GalileoSup - - Galileo is supported
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 99 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+2 X1 defaultGnss - - A bit mask showing the default major GNSS selection.
+If the default major GNSS selection is currently
+configured in the OTP memory for this receiver,
+it takes precedence over the default major GNSS
+selection configured in the executing firmware of this
+receiver.
+bit 0   U:1 GPSDef - - GPS is default-enabled
+bit 1   U:1 GlonassDef - - GLONASS is default-enabled
+bit 2   U:1 BeidouDef - - BeiDou is default-enabled
+bit 3   U:1 GalileoDef - - Galileo is default-enabled
+3 X1 enabled - - A bit mask showing the current major GNSS selection
+enabled for this receiver
+bit 0   U:1 GPSEna - - GPS is enabled
+bit 1   U:1 GlonassEna - - GLONASS is enabled
+bit 2   U:1 BeidouEna - - BeiDou is enabled
+bit 3   U:1 GalileoEna - - Galileo is enabled
+4 U1 simultaneous - - Maximum number of concurrent major GNSS that can
+be supported by this receiver
+5 U1[3] reserved0 - - Reserved
+3.14.3 UBX-MON-HW (0x0a 0x09)
+3.14.3.1 Hardware status
+Message UBX-MON-HW
+Hardware status
+Type Periodic/polled
+Comment This message is deprecated in this protocol version. Use UBX-MON-HW3 and UBX-MON-RF instead.
+Status of different aspects of the hardware, such as antenna, PIO/peripheral pins, noise level, automatic gain
+control (AGC)
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x09 60 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 X4 pinSel - - Mask of pins set as peripheral/PIO
+4 X4 pinBank - - Mask of pins set as bank A/B
+8 X4 pinDir - - Mask of pins set as input/output
+12 X4 pinVal - - Mask of pins value low/high
+16 U2 noisePerMS - - Noise level as measured by the GPS core
+18 U2 agcCnt - - AGC Monitor, as percentage of maximum gain,range 0
+to 8191 (100%)
+20 U1 aStatus - - Status of the antenna supervisor state machine
+(0=INIT, 1=DONTKNOW, 2=OK, 3=SHORT, 4=OPEN)
+21 U1 aPower - - Current power status of antenna (0=OFF, 1=ON,
+2=DONTKNOW)
+22 X1 flags - - Flags
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 100 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 0   U:1 rtcCalib - - RTC is calibrated
+bit 1   U:1 safeBoot - - Safeboot mode (0 = inactive, 1 = active)
+bits 3…2   U:2 jammingState - - Output from jamming/interference monitor (0 =
+unknown or feature disabled or flag unavailable, 1 =
+ok - no significant jamming, 2 = warning - interference
+visible but fix OK, 3 = critical - interference visible and
+no fix). This flag is deprecated in protocol versions
+that support UBX-SEC-SIG (version 0x02) and always
+reported as 0; instead jammingState in UBX-SEC-SIG
+should be monitored.
+bit 4   U:1 xtalAbsent - - RTC xtal has been determined to be absent (not
+supported for protocol versions less than 18.00)
+23 U1 reserved0 - - Reserved
+24 X4 usedMask - - Mask of pins that are used by the virtual pin manager
+28 U1[17] VP - - Array of pin mappings for each of the 17 physical pins
+45 U1 cwSuppression - - CW interference suppression level, scaled (0 = no CW
+jamming, 255 = strong CW jamming)
+46 U1[2] reserved1 - - Reserved
+48 X4 pinIrq - - Mask of pins value using the PIO Irq
+52 X4 pullH - - Mask of pins value using the PIO pull high resistor
+56 X4 pullL - - Mask of pins value using the PIO pull low resistor
+3.14.4 UBX-MON-HW2 (0x0a 0x0b)
+3.14.4.1 Extended hardware status
+Message UBX-MON-HW2
+Extended hardware status
+Type Periodic/polled
+Comment This message is deprecated in this protocol version. Use UBX-MON-HW3 and UBX-MON-RF instead.
+Status of different aspects of the hardware such as Imbalance, Low-Level Configuration and POST Results.
+The first four parameters of this message represent the complex signal from the RF front end. The following
+rules of thumb apply:
+• The smaller the absolute value of the variable ofsI and ofsQ, the better.
+• Ideally, the magnitude of the I-part (magI) and the Q-part (magQ) of the complex signal should be the
+same.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x0b 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 I1 ofsI - - Imbalance of I-part of complex signal, scaled (-128
+= max. negative imbalance, 127 = max. positive
+imbalance)
+1 U1 magI - - Magnitude of I-part of complex signal, scaled (0 = no
+signal, 255 = max. magnitude)
+2 I1 ofsQ - - Imbalance of Q-part of complex signal, scaled (-128
+= max. negative imbalance, 127 = max. positive
+imbalance)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 101 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3 U1 magQ - - Magnitude of Q-part of complex signal, scaled (0 = no
+signal, 255 = max. magnitude)
+4 U1 cfgSource - - Source of low-level configuration
+(114 = ROM, 111 = OTP, 112 = config pins, 102 = flash
+image)
+5 U1[3] reserved0 - - Reserved
+8 U4 lowLevCfg - - Low-level configuration (obsolete for protocol versions
+greater than 15.00)
+12 U1[8] reserved1 - - Reserved
+20 U4 postStatus - - POST status word
+24 U1[4] reserved2 - - Reserved
+3.14.5 UBX-MON-HW3 (0x0a 0x37)
+3.14.5.1 I/O pin status
+Message UBX-MON-HW3
+I/O pin status
+Type Periodic/polled
+Comment This message contains information specific to each HW I/O pin, for example whether the pin is set as Input
+or Output.
+For the antenna supervisor status and other RF status information, see the UBX-MON-RF message.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x37 22 + nPins·6 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 nPins - - The number of I/O pins included
+2 X1 flags - - Flags
+bit 0   U:1 rtcCalib - - RTC is calibrated
+bit 1   U:1 safeBoot - - Safeboot mode (0 = inactive, 1 = active)
+bit 2   U:1 xtalAbsent - - RTC xtal has been determined to be absent
+3 CH[10] hwVersion - - Zero-terminated hardware version string (same as
+that returned in the UBX-MON-VER message)
+13 U1[9] reserved0 - - Reserved
+Start of repeated group (nPins times)
+22 + n·6 U1 reserved1 - - Reserved
+23 + n·6 U1 pinId - - Identifier for the pin, including both external and
+internal pins
+24 + n·6 X2 pinMask - - Pin mask
+bit 0   U:1 periphPIO - - Pin is set to peripheral or PIO? 0=Peripheral 1=PIO
+bits 3…1   U:3 pinBank - - Bank the pin belongs to, where 0=A 1=B 2=C 3=D 4=E
+5=F 6=G 7=H
+bit 4   U:1 direction - - Pin direction? 0=Input 1=Output
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 102 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 5   U:1 value - - Pin value? 0=Low 1=High
+bit 6   U:1 vpManager - - Used by virtual pin manager? 0=No 1=Yes
+bit 7   U:1 pioIrq - - Interrupt enabled? 0=No 1=Yes
+bit 8   U:1 pioPullHigh - - Using pull high resistor? 0=No 1=Yes
+bit 9   U:1 pioPullLow - - Using pull low resistor 0=No 1=Yes
+26 + n·6 U1 VP - - Virtual pin mapping
+27 + n·6 U1 reserved2 - - Reserved
+End of repeated group (nPins times)
+3.14.6 UBX-MON-IO (0x0a 0x02)
+3.14.6.1 I/O system status
+Message UBX-MON-IO
+I/O system status
+Type Periodic/polled
+Comment This message is deprecated in this protocol version. Use UBX-MON-COMMS instead.
+The size of the message is determined by the number of ports 'N' the receiver supports, i.e. on u-blox 5 the
+number of ports is 6.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x02 [0..n]·20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+Start of repeated group (N times)
+0 + n·20 U4 rxBytes - bytes Number of bytes ever received
+4 + n·20 U4 txBytes - bytes Number of bytes ever sent
+8 + n·20 U2 parityErrs - - Number of 100 ms timeslots with parity errors
+10 + n·20 U2 framingErrs - - Number of 100 ms timeslots with framing errors
+12 + n·20 U2 overrunErrs - - Number of 100 ms timeslots with overrun errors
+14 + n·20 U2 breakCond - - Number of 100 ms timeslots with break conditions
+16 + n·20 U1[4] reserved0 - - Reserved
+End of repeated group (N times)
+3.14.7 UBX-MON-MSGPP (0x0a 0x06)
+3.14.7.1 Message parse and process status
+Message UBX-MON-MSGPP
+Message parse and process status
+Type Periodic/polled
+Comment This message is deprecated in this protocol version. Use UBX-MON-COMMS instead.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x06 120 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 103 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+0 U2[8] msg1 - msgs Number of successfully parsed messages for each
+protocol on port0
+16 U2[8] msg2 - msgs Number of successfully parsed messages for each
+protocol on port1
+32 U2[8] msg3 - msgs Number of successfully parsed messages for each
+protocol on port2
+48 U2[8] msg4 - msgs Number of successfully parsed messages for each
+protocol on port3
+64 U2[8] msg5 - msgs Number of successfully parsed messages for each
+protocol on port4
+80 U2[8] msg6 - msgs Number of successfully parsed messages for each
+protocol on port5
+96 U4[6] skipped - bytes Number skipped bytes for each port
+3.14.8 UBX-MON-PATCH (0x0a 0x27)
+3.14.8.1 Installed patches
+Message UBX-MON-PATCH
+Installed patches
+Type Polled
+Comment This message reports information about patches installed and currently enabled on the receiver. It does
+not report on patches installed and then disabled. An enabled patch is considered active when the receiver
+executes from the code space where the patch resides on. For example, a ROM patch is reported active only
+when the system runs from ROM.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x27 4 + nEntries·16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U2 version - - Message version (0x0001 for this version)
+2 U2 nEntries - - Total number of reported patches
+Start of repeated group (nEntries times)
+4 + n·16 X4 patchInfo - - Status information about the reported patch
+bit 0   U:1 activated - - 1: the patch is active, 0: otherwise
+bits 2…1   U:2 location - - Indicates where the patch is stored. 0: OTP, 1: ROM, 2:
+BBR, 3: file system
+8 + n·16 U4 comparator
+Number
+- - The number of the comparator
+12 + n·16 U4 patchAddress - - The address that is targeted by the patch
+16 + n·16 U4 patchData - - The data that is inserted at the patchAddress
+End of repeated group (nEntries times)
+3.14.9 UBX-MON-RF (0x0a 0x38)
+3.14.9.1 RF information
+Message UBX-MON-RF
+RF information
+Type Periodic/polled
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 104 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Comment Information for each RF block. There are as many RF blocks reported as bands supported by this receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x38 4 + nBlocks·24 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 nBlocks - - The number of RF blocks included
+2 U1[2] reserved0 - - Reserved
+Start of repeated group (nBlocks times)
+4 + n·24 U1 blockId - - RF block ID (0 = L1 band, 1 = L2 or L5 band depending
+on product configuration)
+5 + n·24 X1 flags - - Flags
+bits 1…0   U:2 jammingState - - Output from jamming/interference monitor (0 =
+unknown or feature disabled or flag unavailable, 1 =
+ok - no significant jamming, 2 = warning - interference
+visible but fix OK, 3 = critical - interference visible and
+no fix). This flag is deprecated in protocol versions
+that support UBX-SEC-SIG (version 0x02) and always
+reported as 0; instead jammingState in UBX-SEC-SIG
+should be monitored.
+6 + n·24 U1 antStatus - - Status of the antenna supervisor state
+machine (0x00=INIT, 0x01=DONTKNOW, 0x02=OK,
+0x03=SHORT, 0x04=OPEN)
+7 + n·24 U1 antPower - - Current power status of antenna (0x00=OFF,
+0x01=ON, 0x02=DONTKNOW)
+8 + n·24 U4 postStatus - - POST status word
+12 + n·24 U1[4] reserved1 - - Reserved
+16 + n·24 U2 noisePerMS - - Noise level as measured by the GPS core
+18 + n·24 U2 agcCnt - - AGC Monitor, as percentage of maximum gain, range
+0 to 8191 (100%)
+20 + n·24 U1 cwSuppression - - CW interference suppression level, scaled (0=no CW
+jamming, 255 = strong CW jamming)
+21 + n·24 I1 ofsI - - Imbalance of I-part of complex signal, scaled (-128
+= max. negative imbalance, 127 = max. positive
+imbalance)
+22 + n·24 U1 magI - - Magnitude of I-part of complex signal, scaled (0 = no
+signal, 255 = max.magnitude)
+23 + n·24 I1 ofsQ - - Imbalance of Q-part of complex signal, scaled (-128
+= max. negative imbalance, 127 = max. positive
+imbalance)
+24 + n·24 U1 magQ - - Magnitude of Q-part of complex signal, scaled (0 = no
+signal, 255 = max.magnitude)
+25 + n·24 U1[3] reserved2 - - Reserved
+End of repeated group (nBlocks times)
+3.14.10 UBX-MON-RXBUF (0x0a 0x07)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 105 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.14.10.1 Receiver buffer status
+Message UBX-MON-RXBUF
+Receiver buffer status
+Type Periodic/polled
+Comment This message is deprecated in this protocol version. Use UBX-MON-COMMS instead.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x07 24 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U2[6] pending - bytes Number of bytes pending in receiver buffer for each
+target
+12 U1[6] usage - % Maximum usage receiver buffer during the last
+sysmon period for each target
+18 U1[6] peakUsage - % Maximum usage receiver buffer for each target
+3.14.11 UBX-MON-RXR (0x0a 0x21)
+3.14.11.1 Receiver status information
+Message UBX-MON-RXR
+Receiver status information
+Type Output
+Comment The receiver ready message is sent when the receiver changes from or to backup mode.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x21 1 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 X1 flags - - Receiver status flags
+bit 0   U:1 awake - - not in backup mode
+3.14.12 UBX-MON-SPAN (0x0a 0x31)
+3.14.12.1 Signal characteristics
+Message UBX-MON-SPAN
+Signal characteristics
+Type Periodic/polled
+Comment This message is to be used as a basic spectrum analyzer, where it displays one spectrum for each of the
+receiver's existing RF paths. The spectrum is conveyed with the following parameters: The frequency span
+in Hz, the frequency bin resolution in Hz, the center frequency in Hz, and 256 bins with amplitude data.
+Additionally, in order to give further insight on the signal captured by the receiver, the current gain of the
+internal programmable gain amplifier (PGA) is provided.
+This message gives information for comparative analysis rather than absolute and precise spectrum
+overview. Users should not expect highly accurate spectrum amplitude.
+Note that the PGA gain is not included in the spectrum data but is available as a separate field. Neither the
+spectrum, nor the PGA gain considers the internal fixed LNA gain or an external third-party LNA.
+The center frequency at each bin, assuming a zero-based bin count, can be computed as
+f(i) = center + span * (i - 127) / 256
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x31 4 + numRfBlocks·272 see below CK_A CK_B
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 106 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 numRfBlocks - - Number of RF blocks included
+2 U1[2] reserved0 - - Reserved
+Start of repeated group (numRfBlocks times)
+4 + n·272 U1[256] spectrum 2^-2 dB Spectrum data (number of points = span/res) [Uuu.ff
+dB]
+260 + n·272 U4 span - Hz Spectrum span
+264 + n·272 U4 res - Hz Resolution of the spectrum
+268 + n·272 U4 center - Hz Center of spectrum span
+272 + n·272 U1 pga - dB Programmable gain amplifier
+273 + n·272 U1[3] reserved1 - - Reserved
+End of repeated group (numRfBlocks times)
+3.14.13 UBX-MON-SPT (0x0a 0x2f)
+3.14.13.1 Sensor production test
+Message UBX-MON-SPT
+Sensor production test
+Type Polled
+Comment This message reports the state of, and measurements made during, sensor self-tests.
+This message can also be used to retrieve information about detected sensor(s) and driver(s) used.
+This message is only supported if a sensor is directly connected to the u-blox chip. This includes modules
+that contain IMUs.
+Note that this message shows the status of the last self-test since sensor startup. The self-test results are
+not stored in non-volatile memory.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x2f 4 + numSensor·4 + numRes·12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1 numSensor - - number of sensors reported in this message
+2 U1 numRes - - number of result items reported in this message
+3 U1 reserved0 - - Reserved
+Start of repeated group (numSensor times)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 107 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+4 + n·4 U1 sensorId - - Sensor ID
+The following IDs are defined, others are reserved:
+• 1: ST LSM6DS0 6-axis IMU with temperature
+sensor
+• 2: Invensense MPU6500 6-axis IMU with
+temperature sensor
+• 3: Bosch BMI160 6-axis IMU with temperature
+sensor
+• 7: ST LSM6DS3 6-axis IMU with temperature
+sensor
+• 9: Bosch SMI130 6-axis IMU with temperature
+sensor
+• 12: MPU6515, 6-axis inertial sensor from
+Invensense
+• 13: ST LSM6DSL 6-axis IMU with temperature
+sensor
+• 14: SMG130, 3-axis gyroscope with temperature
+sensor from Bosch
+• 15: SMI230, 6-axis IMU with temperature sensor
+from Bosch
+• 16: BMI260, 6-axis IMU with temperature sensor
+from Bosch
+• 17: ISM330DLC, 6-axis IMU with temperature
+sensor from ST
+• 18: LSM6DSR, 6-axis IMU with 85 deg
+temperature sensor from ST / ISM330DHCX, 6-
+axis IMU with 105 deg temperature sensor from
+ST
+• 19: ICM42605, 6-axis IMU with 85 deg
+temperature sensor from InvenSense TDK
+• 20: IIM42652, 6-axis IMU with 105 deg
+temperature sensor from InvenSense TDK
+• 21: BMI32X, 6-axis IMU with 85 deg temperature
+sensor from Bosch
+• 22: IAM20680HT, 6-axis IMU with 105 deg
+temperature sensor from InvenSense TDK
+• 23: LSM6DSOW, 6-axis IMU with 85 deg
+temperature sensor from ST
+Not all sensors are supported in any released firmware.
+Refer to the release notes to find out which sensor is
+supported by a certain firmware.
+5 + n·4 X1 drvVer - - Version information
+bits 3…0   U:4 drvVerMaj - - Driver major version
+bits 7…4   U:4 drvVerMin - - Driver minor version
+6 + n·4 U1 testState - - State of one sensor's test, it can be
+• 0: test not yet started
+• 1: test started but not yet finished
+• 2: test did not finish due to error during execution
+• 3: test finished normally, test data is available
+7 + n·4 U1 drvFileName - - 0 if the active driver is loaded from image, last
+character of the file name if it is loaded from separate
+file.
+End of repeated group (numSensor times)
+Start of repeated group (numRes times)
+4 +
+numSensor·4
++ n·12
+U2 sensorIdRes - - Sensor ID; eligible values are the same as in
+sensorIdState field
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 108 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+6 +
+numSensor·4
++ n·12
+U2 sensorType - - Sensor type and axis (if applicable) to which the result
+refers
+The following values are defined, others are reserved:
+• 5: Gyroscope z axis
+• 12: Gyroscope temperature
+• 13: Gyroscope y axis
+• 14: Gyroscope x axis
+• 16: Accelerometer x axis
+• 17: Accelerometer y axis
+• 18: Accelerometer z axis
+• 19: Barometer
+• 22: Magnetometer x axis
+• 23: Magnetometer y axis
+• 24: Magnetometer z axis
+• 25: Barometer temperature
+8 +
+numSensor·4
++ n·12
+U2 resType - - The type of result stored in the value field
+• 1: Measurement without self-test offset (raw and
+unscaled digital value)
+• 2: Measurement with positive self-test offset
+(raw and unscaled digital value)
+• 3: Measurement with negative self-test offset
+(raw and unscaled digital value)
+• 4: Minimum off-to-positive to pass self-test, as
+deduced from on-chip trimming information
+• 5: Maximum off-to-positive to pass self-test, as
+deduced from on-chip trimming information
+• 6: Minimum negative-to-positive to pass
+self-test, as deduced from on-chip trimming
+information
+• 7: Maximum negative-to-positive to pass
+self-test, as deduced from on-chip trimming
+information
+• 8: Self-test passed; test passed if value = 1 and
+failed if 0. Used if the decision is read out from the
+sensor itself.
+10 +
+numSensor·4
++ n·12
+U1[2] reserved1 - - Reserved
+12 +
+numSensor·4
++ n·12
+I4 value - - value of the specific test result
+End of repeated group (numRes times)
+3.14.14 UBX-MON-SYS (0x0a 0x39)
+3.14.14.1 Current system performance information
+Message UBX-MON-SYS
+Current system performance information
+Type Periodic/polled
+Comment This message contains operationally relevant system information for monitoring purposes.
+cpuLoadMax value is only valid, if 1 second output frequency is set.
+Detailed information about ioUsage/ioUsageMax are available in UBX-MON-COMMS message.
+tempValue has an accuracy of +/- 2 deg.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x39 24 see below CK_A CK_B
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 109 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 msgVer - - Message Version (0x01)
+1 U1 bootType - - Boot type system
+0-Unknown
+1-Cold Start
+2-Watchdog
+3-Hardware reset
+4-Hardware backup
+5-Software backup
+6-Software reset
+7-VIO fail
+8-VDD_X fail
+9-VDD_RF fail
+10-V_CORE_HIGH fail
+11-System reset
+2 U1 cpuLoad - - Highest actual load of realtime tasks of all CPUs in %
+3 U1 cpuLoadMax - - Maximal CPU load value in % seen since last restart
+4 U1 memUsage - - Highest actual dynamic memory usage of all CPUs in
+%
+5 U1 memUsageMax - - Maximal dynamic memory usage in % seen since last
+restart
+6 U1 ioUsage - - Highest actual IO bandwidth usage of all rx/tx
+interfaces in %
+7 U1 ioUsageMax - - Maximal bandwidth usage of all rx/tx interfaces in %
+seen since last restart
+8 U4 runTime - sec Time since last restart
+12 U2 noticeCount - - Number of notices occured since last restart
+14 U2 warnCount - - Number of warnings occured since last restart
+16 U2 errorCount - - Number of errors occured since last restart
+18 I1 tempValue - - Temperature value [C]
+19 U1[5] reserved0 - - Reserved
+3.14.15 UBX-MON-TXBUF (0x0a 0x08)
+3.14.15.1 Transmitter buffer status
+Message UBX-MON-TXBUF
+Transmitter buffer status
+Type Periodic/polled
+Comment This message is deprecated in this protocol version. Use UBX-MON-COMMS instead.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x08 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U2[6] pending - bytes Number of bytes pending in transmitter buffer for
+each target
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 110 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+12 U1[6] usage - % Maximum usage transmitter buffer during the last
+sysmon period for each target
+18 U1[6] peakUsage - % Maximum usage transmitter buffer for each target
+24 U1 tUsage - % Maximum usage of transmitter buffer during the last
+sysmon period for all targets
+25 U1 tPeakusage - % Maximum usage of transmitter buffer for all targets
+26 X1 errors - - Error bitmask
+bits 5…0   U:6 limit - - Buffer limit of corresponding target reached
+bit 6   U:1 mem - - Memory Allocation error
+bit 7   U:1 alloc - - Allocation error (TX buffer full)
+27 U1 reserved0 - - Reserved
+3.14.16 UBX-MON-VER (0x0a 0x04)
+3.14.16.1 Poll receiver and software version
+Message UBX-MON-VER
+Poll receiver and software version
+Type Poll request
+Comment
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x04 0 see below CK_A CK_B
+Payload This message has no payload.
+3.14.16.2 Receiver and software version
+Message UBX-MON-VER
+Receiver and software version
+Type Polled
+Comment
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0a 0x04 40 + [0..n]·30 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 CH[30] swVersion - - Nul-terminated software version string.
+30 CH[10] hwVersion - - Nul-terminated hardware version string
+Start of repeated group (N times)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 111 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+40 + n·30 CH[30] extension - - Extended software information strings.
+A series of nul-terminated strings. Each extension
+field is 30 characters long and contains varying
+software information. Not all extension fields may
+appear.
+Examples of reported information: the software
+version string of the underlying ROM (when the
+receiver's firmware is running from flash), the
+firmware version, the supported protocol version, the
+module identifier, the flash information structure
+(FIS) file information, the supported major GNSS, the
+supported augmentation systems.
+See Firmware and protocol versions for details.
+End of repeated group (N times)

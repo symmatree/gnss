@@ -1,0 +1,99 @@
+3.18 UBX-SEC (0x27)
+The messages in the UBX-SEC class are used for security features of the receiver.
+3.18.1 UBX-SEC-SIG (0x27 0x09)
+3.18.1.1 Signal security information
+Message UBX-SEC-SIG
+Signal security information
+Type Periodic/polled
+Comment Information related to the security, i.e. availability and integrity, of the signals.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x27 0x09 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1[3] reserved0 - - Reserved
+4 X1 jamFlags - - Information related to jamming/interference
+bit 0   U:1 jamDetEnabled - - Flag indicates whether jamming/interference
+detection is enabled
+bits 2…1   U:2 jammingState - - Jamming/interference state
+• 0: Unknown
+• 1: No jamming indicated
+• 2: Warning; jamming indicated but fix OK
+• 3: Critical; jamming indicated and no fix
+5 U1[3] reserved1 - - Reserved
+8 X1 spfFlags - - Information related to GNSS spoofing
+bit 0   U:1 spfDetEnabled - - Flag indicates whether spoofing detection is enabled
+bits 3…1   U:3 spoofingState - - Spoofing state
+• 0: Unknown
+• 1: No spoofing indicated
+• 2: Spoofing indicated
+• 3: Spoofing affirmed
+Note that the spoofing state value only reflects the
+detector state for the current navigation epoch. I.e. a
+value of 1: No spoofing indicated does not mean that
+the receiver is not spoofed, it simply states that the
+detector was not triggered in this epoch.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 176 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+9 U1[3] reserved2 - - Reserved
+3.18.2 UBX-SEC-SIGLOG (0x27 0x10)
+3.18.2.1 Signal security log
+Message UBX-SEC-SIGLOG
+Signal security log
+Type Periodic/polled
+Comment This message provides a log of past signal security related events, that is, events related to jamming and
+spoofing. Each event is a combination of a detection type and a event type, where the event type 'indication
+started' and 'indication stopped' and also the event type 'indication triggered' and 'indication timed-out' form
+a pair. A maximum of 16 events are logged; after the log is filled, recent events take precedence over past
+events in the log. Power cycles and restarts of the receiver reset the log, deleting its content.
+Note: It is advised not to restart the receiver while it's indicating spoofing.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x27 0x10 8 + numEvents·8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 numEvents - - Number of events
+2 U1[6] reserved0 - - Reserved
+Start of repeated group (numEvents times)
+8 + n·8 U4 timeElapsed - s Seconds elapsed since this event
+Special value 0xFFFFFFFF: more than 45 days
+12 + n·8 U1 detectionType - - Type of the spoofing or jamming detection:
+• 0 = simulated signal
+• 1 = abnormal signal
+• 2 = INS/GNSS mismatch
+• 3 = abrupt changes in GNSS signal
+• 4 = broadband jamming/interference
+(deprecated)
+• 5 = narrowband jamming/interference
+(deprecated)
+13 + n·8 U1 eventType - - Type of the event:
+• 0 = indication started
+• 1 = indication stopped
+• 2 = indication triggered
+• 3 = indication timed-out
+Note: Single epoch events, caused by abrupt changes
+due to switching from the real to the spoofing signal or
+vice versa are handled as time-out events. This means
+that the time-out event is reported after a certain cool
+off period which is not related to any observations
+in the signal. The other detection types make use of
+'start' and 'stop' event types.
+14 + n·8 U1[2] reserved1 - - Reserved
+End of repeated group (numEvents times)
+3.18.3 UBX-SEC-UNIQID (0x27 0x03)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 177 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.18.3.1 Unique chip ID
+Message UBX-SEC-UNIQID
+Unique chip ID
+Type Output
+Comment This message is used to retrieve a unique chip identifier (40 bits, 5 bytes).
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x27 0x03 9 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1[3] reserved0 - - Reserved
+4 U1[5] uniqueId - - Unique chip ID

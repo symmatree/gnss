@@ -1,32 +1,20 @@
-// This program generates messages.go from messages.xml
-// TODO generate string methods for all bitfield types
-
-//go:build ignore
-// +build ignore
-
-package main
+package ubx
 
 import (
-	"bytes"
 	"encoding/xml"
-	"flag"
 	"fmt"
-	"go/format"
 	"html/template"
 	"log"
-	"os"
-	"path/filepath"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
 
 type Definitions struct {
-	Message []*Message
+	MessageDef []*MessageDef
 }
 
-type Message struct {
+type MessageDef struct {
 	Name        string
 	Type        string
 	Description string
@@ -37,7 +25,7 @@ type Message struct {
 	Length      string   `xml:"Structure>Length"` // of the form A + N * B, but varying syntax
 	Blocks      []*Block `xml:"Structure>Payload>Block"`
 
-	version int // different versions of the same message name
+	Version int // different versions of the same MessageDef name
 }
 
 type Block struct {
@@ -53,12 +41,12 @@ type Block struct {
 	Unit        string
 	BitfieldRef string    `xml:"Bitfield>Reference"`
 	Bitfield    []*BitDef `xml:"Bitfield>Type"`
-	Subtype     string    // in some messages, the first field has an additional type-switch function.  valid values are 'default' or a number
+	Subtype     string    // in some MessageDefs, the first field has an additional type-switch function.  valid values are 'default' or a number
 
 	Nested []*Block `xml:"Block"` // for repeated or optional blocks, this contains the subfields
 
-	Message *Message `xml:"-"` // link back up
-	LenFor  string   `xml:"-"` // for fields that are the CountField of a repeated field, name of the repeated field
+	MessageDef *MessageDef `xml:"-"` // link back up
+	LenFor     string      `xml:"-"` // for fields that are the CountField of a repeated field, name of the repeated field
 
 }
 
@@ -88,20 +76,20 @@ func (b *BitDef) Mask() string {
 func (b *BitDef) Shift() string { return strings.Split(b.Index, ":")[0] }
 func (b *BitDef) OneBit() bool  { return len(strings.Split(b.Index, ":")) == 1 }
 
-type byNameAndLength []*Message
+type ByNameAndLength []*MessageDef
 
-func (v byNameAndLength) Len() int      { return len(v) }
-func (v byNameAndLength) Swap(i, j int) { v[i], v[j] = v[j], v[i] }
-func (v byNameAndLength) Less(i, j int) bool {
+func (v ByNameAndLength) Len() int      { return len(v) }
+func (v ByNameAndLength) Swap(i, j int) { v[i], v[j] = v[j], v[i] }
+func (v ByNameAndLength) Less(i, j int) bool {
 	if v[i].Name != v[j].Name {
 		return v[i].Name < v[j].Name
 	}
 	return v[i].MinSize() < v[j].MinSize()
 }
 
-// set Block.Message and BitDef.Block pointers
-func (b *Block) Link(m *Message) {
-	b.Message = m
+// set Block.MessageDef and BitDef.Block pointers
+func (b *Block) Link(m *MessageDef) {
+	b.MessageDef = m
 	for _, v := range b.Nested {
 		v.Link(m)
 	}
@@ -110,7 +98,7 @@ func (b *Block) Link(m *Message) {
 	}
 }
 
-func (m *Message) ClassIDName() string {
+func (m *MessageDef) ClassIDName() string {
 	parts := strings.Split(strings.ToLower(m.Name), "-")
 	if len(parts) > 3 {
 		parts = parts[:3]
@@ -118,13 +106,13 @@ func (m *Message) ClassIDName() string {
 	return strings.Join(parts, "-")
 }
 
-func (m *Message) TypeName() string {
+func (m *MessageDef) TypeName() string {
 	parts := strings.Split(strings.ToLower(m.Name), "-")
 	for i, v := range parts {
 		parts[i] = strings.Title(v)
 	}
-	if m.version > 0 {
-		return fmt.Sprintf("%s%d", strings.Join(parts[1:], ""), m.version)
+	if m.Version > 0 {
+		return fmt.Sprintf("%s%d", strings.Join(parts[1:], ""), m.Version)
 	}
 	return strings.Join(parts[1:], "")
 }
@@ -162,7 +150,7 @@ func (b *Block) FieldType() string {
 	}
 	switch tp {
 	case "RU1_3":
-		return "Float8" // defined in spec but not found in any message
+		return "Float8" // defined in spec but not found in any MessageDef
 	case "R4":
 		return "float32"
 	case "R8":
@@ -222,7 +210,7 @@ func (b *Block) IsSubtypeDefault() bool { return b.Subtype == "default" }
 func (b *Block) SubtypeValue() int      { v, _ := strconv.ParseUint(b.Subtype, 0, 8); return int(v) }
 
 // the non optional non repeated fields at the begining
-func (m *Message) MinSize() int {
+func (m *MessageDef) MinSize() int {
 	sz := 0
 	for _, v := range m.Blocks {
 		if v.Cardinality != "" {
@@ -234,7 +222,7 @@ func (m *Message) MinSize() int {
 }
 
 // minsize + the optional bit
-func (m *Message) MaxFixSize() int {
+func (m *MessageDef) MaxFixSize() int {
 	sz := 0
 	for _, v := range m.Blocks {
 		switch v.Cardinality {
@@ -251,7 +239,7 @@ func (m *Message) MaxFixSize() int {
 }
 
 // size of the (hopefulluy single) variable block
-func (m *Message) VarSize() int {
+func (m *MessageDef) VarSize() int {
 	sz := 0
 	for _, v := range m.Blocks {
 		if v.Cardinality == "repeated" {
@@ -263,8 +251,8 @@ func (m *Message) VarSize() int {
 	return sz
 }
 
-// the UBX-INF-xxx messages are really just strings
-func (m *Message) IsString() bool {
+// the UBX-INF-xxx MessageDefs are really just strings
+func (m *MessageDef) IsString() bool {
 	if len(m.Blocks) != 1 {
 		return false
 	}
@@ -298,138 +286,6 @@ func (v *Number) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	}
 	*v = Number(vv)
 	return nil
-}
-
-func main() {
-	log.SetFlags(0)
-	log.SetPrefix("msggen: ")
-	flag.Parse()
-
-	if len(flag.Args()) != 3 {
-		log.Fatalf("Usage: %s code.tmpl messages.xml code.go", os.Args[0])
-	}
-
-	tmpl, err := template.New(filepath.Base(flag.Arg(0))).Funcs(tmplfuncs).ParseFiles(flag.Arg(0))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if flag.Arg(1) != "-" {
-		os.Stdin, err = os.Open(flag.Arg(1))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	var definitions Definitions
-
-	if err := xml.NewDecoder(os.Stdin).Decode(&definitions); err != nil {
-		log.Fatal(err)
-	}
-
-	sort.Stable(byNameAndLength(definitions.Message))
-
-	for _, v := range definitions.Message {
-		for _, b := range v.Blocks {
-			b.Link(v)
-		}
-	}
-
-	// name repeated and annotate 'count' fields
-	for _, msg := range definitions.Message {
-		for _, b := range msg.Blocks {
-			if b.Cardinality == "repeated" {
-				b.Name = "Items"
-				if strings.HasPrefix(strings.ToLower(b.LenField), "num") {
-					b.Name = strings.Title(b.LenField[3:])
-				}
-
-				// link back
-				for _, bb := range msg.Blocks {
-					if bb.Name == b.LenField {
-						bb.LenFor = b.Name
-						break
-					}
-				}
-
-			}
-		}
-	}
-
-	// sort by class/id, and length options
-	msgs := map[string][]*Message{}
-	for _, v := range definitions.Message {
-		n := v.ClassIDName()
-		v.version = len(msgs[n])
-		msgs[n] = append(msgs[n], v)
-	}
-
-	// figure out if we can figure out the type from just class, id and size
-	for k, v := range msgs {
-		m := map[int]int{}
-		// first count all minimum and minimum+opt sizes
-		for _, vv := range v {
-			if sz := vv.VarSize(); sz == 0 {
-				m[vv.MinSize()]++
-				if vv.MaxFixSize() != vv.MinSize() {
-					m[vv.MaxFixSize()]++
-				}
-			}
-		}
-		// now mark all variable sizes that could alias the existing ones
-		for _, vv := range v {
-			if sz := vv.VarSize(); sz != 0 {
-				for kk, _ := range m {
-					if (kk >= vv.MinSize()) && (kk-vv.MinSize())%sz == 0 {
-						m[vv.MinSize()]++
-					}
-				}
-			}
-		}
-		for _, cnt := range m {
-			if len(v) > 1 && cnt > 1 {
-				log.Println("Ambiguous type", k, m)
-				isambiguous[k] = true
-				break
-			}
-		}
-	}
-
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "// Generated Code -- DO NOT EDIT.\n//go:generate go run msggen.go %s %s %s\n\n", flag.Arg(0), flag.Arg(1), flag.Arg(2))
-	if err := tmpl.Execute(&buf, msgs); err != nil {
-		log.Fatal(err)
-	}
-	b := buf.Bytes()
-
-	// fix all &#xx; xml entities
-	b = regexp.MustCompile(`&#[0-9]{2};`).ReplaceAllFunc(b, func(b []byte) []byte {
-		v, _ := strconv.ParseUint(string(b[2:4]), 10, 8)
-		return []byte{byte(v)}
-	})
-	b = regexp.MustCompile(`&gt;`).ReplaceAllLiteral(b, []byte(">"))
-	b = regexp.MustCompile(`&lt;`).ReplaceAllLiteral(b, []byte("<"))
-	b = regexp.MustCompile(`&amp;`).ReplaceAllLiteral(b, []byte("&"))
-
-	// try to format as valid Go
-	bb, err := format.Source(b)
-	if err != nil {
-		log.Println(err)
-		bb = b
-	}
-
-	if flag.Arg(2) != "-" {
-		os.Stdout, err = os.Create(flag.Arg(2))
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer os.Stdout.Close()
-	}
-
-	if _, err := os.Stdout.Write(bb); err != nil {
-		log.Fatal(err)
-	}
-
 }
 
 // Helper functions for in the template

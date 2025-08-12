@@ -32,6 +32,7 @@ repos:
       - id: check-shebang-scripts-are-executable
       - id: check-json
       - id: check-toml
+      - id: check-xml
       - id: check-yaml
         args:
           - --allow-multiple-documents

@@ -1,0 +1,130 @@
+3.19 UBX-TIM (0x0d)
+The messages in the UBX-TIM class are used to output timing information from the receiver, such
+as time pulse and time mark measurements.
+3.19.1 UBX-TIM-TM2 (0x0d 0x03)
+3.19.1.1 Time mark data
+Message UBX-TIM-TM2
+Time mark data
+Type Periodic/polled
+Comment This message contains information for high precision time stamping / pulse counting.
+Thedelayfigures andtimebasegivenin CFG-TPconfigurationitems are also appliedto the time results output
+in this message.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0d 0x03 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 ch - - Channel (i.e. EXTINT) upon which the pulse was
+measured
+1 X1 flags - - Bitmask
+bit 0   U:1 mode - - • 0=single
+• 1=running
+bit 1   U:1 run - - • 0=armed
+• 1=stopped
+bit 2   U:1 newFallingEdge - - New falling edge detected
+bits 4…3   U:2 timeBase - - • 0=Time base is Receiver time
+• 1=Time base is GNSS time (the system according
+to the configuration in CFG-TP configuration
+items for tpIdx=0)
+• 2=Time base is UTC (the variant according to the
+configuration in CFG-NAVSPG-* configuration
+items)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 178 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 5   U:1 utc - - • 0=UTC not available
+• 1=UTC available
+bit 6   U:1 time - - • 0=Time is not valid
+• 1=Time is valid (Valid GNSS fix)
+bit 7   U:1 newRisingEdge - - New rising edge detected
+2 U2 count - - Rising edge counter
+4 U2 wnR - - Week number of last rising edge
+6 U2 wnF - - Week number of last falling edge
+8 U4 towMsR - ms Tow of rising edge
+12 U4 towSubMsR - ns Millisecond fraction of tow of rising edge in
+nanoseconds
+16 U4 towMsF - ms Tow of falling edge
+20 U4 towSubMsF - ns Millisecond fraction of tow of falling edge in
+nanoseconds
+24 U4 accEst - ns Accuracy estimate
+3.19.2 UBX-TIM-TP (0x0d 0x01)
+3.19.2.1 Time pulse time data
+Message UBX-TIM-TP
+Time pulse time data
+Type Periodic/polled
+Comment This message contains information on the timing of the next pulse at the TIMEPULSE0 output. The
+recommended configuration when using this message is to set both the measurement rate (CFG-RATE) and
+the timepulse frequency (CFG-TP) to 1 Hz.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0d 0x01 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 towMS - ms Time pulse time of week according to time base
+4 U4 towSubMS 2^-32 ms Submillisecond part of towMS
+8 I4 qErr - ps Quantization error of time pulse
+12 U2 week - weeks Time pulse week number according to time base
+14 X1 flags - - Flags
+bit 0   U:1 timeBase - - • 0 = Time base is GNSS
+• 1 = Time base is UTC
+bit 1   U:1 utc - - • 0 = UTC not available
+• 1 = UTC available
+bits 3…2   U:2 raim - - (T)RAIM information
+• 0 = Information not available
+• 1 = Not active
+• 2 = Active
+bit 4   U:1 qErrInvalid - - • 0 = Quantization error valid
+• 1 = Quantization error invalid
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 179 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 5   U:1 TpNotLocked - - • 0 = Next TP is locked to GNSS
+• 1 = Next TP is based on local time and not locked
+to GNSS - week/tow may be invalid
+15 X1 refInfo - - Time reference information
+bits 3…0   U:4 timeRefGnss - - GNSS reference information. Only valid if time base is
+GNSS (timeBase=0).
+• 0 = GPS
+• 1 = GLONASS
+• 2 = BeiDou
+• 3 = Galileo
+• 4 = NavIC
+• 15 = Unknown
+bits 7…4   U:4 utcStandard - - UTC standard identifier. Only valid if time base is UTC
+(timeBase=1).
+• 0 = Information not available
+• 1 = Communications Research Laboratory (CRL),
+Tokyo, Japan
+• 2 = National Institute of Standards and
+Technology (NIST)
+• 3 = U.S. Naval Observatory (USNO)
+• 4 = International Bureau of Weights and
+Measures (BIPM)
+• 5 = European laboratories
+• 6 = Former Soviet Union (SU)
+• 7 = National Time Service Center (NTSC), China
+• 8 = National Physics Laboratory India (NPLI)
+• 15 = Unknown
+3.19.3 UBX-TIM-VRFY (0x0d 0x06)
+3.19.3.1 Sourced time verification
+Message UBX-TIM-VRFY
+Sourced time verification
+Type Periodic/polled
+Comment This message contains verification information about previous time received via assistance data or from RTC.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x0d 0x06 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 I4 itow - ms integer millisecond tow received by source
+4 I4 frac - ns sub-millisecond part of tow
+8 I4 deltaMs - ms integer milliseconds of delta time (current time minus
+sourced time)
+12 I4 deltaNs - ns Sub-millisecond part of delta time
+16 U2 wno - week Week number
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 180 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+18 X1 flags - - Flags
+bits 2…0   U:3 src - - Aiding time source
+• 0 = no time aiding done
+• 2 = source was RTC
+• 3 = source was assistance data
+19 U1 reserved0 - - Reserved

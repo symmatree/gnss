@@ -1,0 +1,1020 @@
+3.13 UBX-MGA (0x13)
+The messages in the UBX-MGA class are used for sending GNSS assistance (A-GNSS, aiding)
+information to the receiver as well as backing up the navigation database from the receiver to a host.
+3.13.1 UBX-MGA-ACK (0x13 0x60)
+3.13.1.1 Multiple GNSS acknowledge message
+Message UBX-MGA-ACK-DATA0
+Multiple GNSS acknowledge message
+Type Output
+Comment This message is sent by a u-blox receiver to acknowledge the receipt of an assistance message.
+Acknowledgments are enabled by setting the CFG-NAVSPG-ACKAIDING item.
+See section Flow control in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x60 8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Type of acknowledgment:
+• 0 = The message was not used by the receiver
+(see infoCode field for an indication of why)
+• 1 = The message was accepted for use by the
+receiver (the infoCode field will be 0)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 infoCode - - Provides greater information on what the receiver
+chose to do with the message contents:
+• 0 = The receiver accepted the data
+• 1 = The receiver does not know the time so it
+cannot use the data (To resolve this a UBX-MGAINI-TIME_UTC message should be supplied first)
+• 2 = The message version is not supported by the
+receiver
+• 3 = The message size does not match the
+message version
+• 4 = The message data could not be stored to the
+database
+• 5 = The receiver is not ready to use the message
+data
+• 6 = The message type is unknown
+3 U1 msgId - - UBX message ID of the acknowledged message
+4 U1[4] msgPayload
+Start
+- - The first 4 bytes of the acknowledged message's
+payload
+3.13.2 UBX-MGA-BDS (0x13 0x03)
+3.13.2.1 BeiDou ephemeris assistance for satellites svId 1..37
+Message UBX-MGA-BDS-EPH
+BeiDou ephemeris assistance for satellites svId 1..37
+Type Input
+Comment This message allows the delivery of BeiDou D1/D2 ephemeris assistance to a receiver.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 77 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x03 88 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x01 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - BeiDou satellite identifier (see Satellite Numbering)
+3 U1 reserved0 - - Reserved
+4 U1 SatH1 - - Autonomous satellite Health flag
+5 U1 IODC - - Issue of Data, Clock
+6 I2 a2 2^-66 s/s^2 Time polynomial coefficient 2
+8 I4 a1 2^-50 s/s Time polynomial coefficient 1
+12 I4 a0 2^-33 s Time polynomial coefficient 0
+16 U4 toc 2^3 s Clock data reference time
+20 I2 TGD1 0.1 ns Equipment Group Delay Differential
+22 U1 URAI - - User Range Accuracy Index
+23 U1 IODE - - Issue of Data, Ephemeris
+24 U4 toe 2^3 s Ephemeris reference time
+28 U4 sqrtA 2^-19 m^0.5 Square root of semi-major axis
+32 U4 e 2^-33 - Eccentricity
+36 I4 omega 2^-31 semicircles
+Argument of perigee
+40 I2 Deltan 2^-43 semicircles/s
+Mean motion difference from computed value
+42 I2 IDOT 2^-43 semicircles/s
+Rate of inclination angle
+44 I4 M0 2^-31 semicircles
+Mean anomaly at reference time
+48 I4 Omega0 2^-31 semicircles
+Longitude of ascending node of orbital of plane
+computed according to reference time
+52 I4 OmegaDot 2^-43 semicircles/s
+Rate of right ascension
+56 I4 i0 2^-31 semicircles
+Inclination angle at reference time
+60 I4 Cuc 2^-31 radians Amplitude of cosine harmonic correction term to the
+argument of latitude
+64 I4 Cus 2^-31 radians Amplitude of sine harmonic correction term to the
+argument of latitude
+68 I4 Crc 2^-6 m Amplitude of cosine harmonic correction term to the
+orbit radius
+72 I4 Crs 2^-6 m Amplitude of sine harmonic correction term to the
+orbit radius
+76 I4 Cic 2^-31 radians Amplitude of cosine harmonic correction term to the
+angle of inclination
+80 I4 Cis 2^-31 radians Amplitude of sine harmonic correction term to the
+angle of inclination
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 78 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+84 U1[4] reserved1 - - Reserved
+3.13.2.2 BeiDou almanac assistance
+Message UBX-MGA-BDS-ALM
+BeiDou almanac assistance
+Type Input
+Comment This message allows the delivery of BeiDou almanac assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x03 40 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x02 for this version)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - BeiDou satellite identifier (see Satellite Numbering)
+3 U1 reserved0 - - Reserved
+4 U1 Wna - week Almanac Week Number
+5 U1 toa 2^12 s Almanac reference time
+6 I2 deltaI 2^-19 semicircles
+Almanac correction of orbit reference inclination at
+reference time
+8 U4 sqrtA 2^-11 m^0.5 Almanac square root of semi-major axis
+12 U4 e 2^-21 - Almanac eccentricity
+16 I4 omega 2^-23 semicircles
+Almanac argument of perigee
+20 I4 M0 2^-23 semicircles
+Almanac mean anomaly at reference time
+24 I4 Omega0 2^-23 semicircles
+Almanac longitude of ascending node of orbit plane at
+computed according to reference time
+28 I4 omegaDot 2^-38 semicircles/s
+Almanac rate of right ascension
+32 I2 a0 2^-20 s Almanac satellite clock bias
+34 I2 a1 2^-38 s/s Almanac satellite clock rate
+36 U1[4] reserved1 - - Reserved
+3.13.2.3 BeiDou health assistance
+Message UBX-MGA-BDS-HEALTH
+BeiDou health assistance
+Type Input
+Comment This message allows the delivery of BeiDou health assistance from D1/D2 ephemeris to a receiver.
+See section AssistNow online in the integration manual for details.
+This message allows the delivery of health assistance data for all satellites with svId 1 to 30.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x03 68 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x04 for this type)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 79 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 U2[30] healthCode - - Each two-byte value represents a BeiDou SV (1-30).
+The 9 LSBs of each byte contain the 9 bit health code
+from subframe 5 pages 7,8 of the D1 message, and
+from subframe 5 pages 35,36 of the D2 message.
+64 U1[4] reserved1 - - Reserved
+3.13.2.4 BeiDou UTC assistance
+Message UBX-MGA-BDS-UTC
+BeiDou UTC assistance
+Type Input
+Comment This message allows the delivery of BeiDou UTC assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x03 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x05 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I4 a0UTC 2^-30 s BDT clock bias relative to UTC
+8 I4 a1UTC 2^-50 s/s BDT clock rate relative to UTC
+12 I1 dtLS - s Delta time due to leap seconds before the new leap
+second effective
+13 U1 reserved1 - - Reserved
+14 U1 wnRec - week BeiDou week number of reception of this UTC
+parameter set (8-bit truncated)
+15 U1 wnLSF - week Week number of the new leap second
+16 U1 dN - day Day number of the new leap second
+17 I1 dtLSF - s Delta time due to leap seconds after the new leap
+second effective
+18 U1[2] reserved2 - - Reserved
+3.13.2.5 BeiDou ionosphere assistance
+Message UBX-MGA-BDS-IONO
+BeiDou ionosphere assistance
+Type Input
+Comment This message allows the delivery of BeiDou ionospheric assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x03 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x06 for this type)
+1 U1 version - - Message version (0x00 for this version)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 80 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+2 U1[2] reserved0 - - Reserved
+4 I1 alpha0 2^-30 s Ionospheric parameter alpha0
+5 I1 alpha1 2^-27 s/pi Ionospheric parameter alpha1
+6 I1 alpha2 2^-24 s/pi^2 Ionospheric parameter alpha2
+7 I1 alpha3 2^-24 s/pi^3 Ionospheric parameter alpha3
+8 I1 beta0 2^11 s Ionospheric parameter beta0
+9 I1 beta1 2^14 s/pi Ionospheric parameter beta1
+10 I1 beta2 2^16 s/pi^2 Ionospheric parameter beta2
+11 I1 beta3 2^16 s/pi^3 Ionospheric parameter beta3
+12 U1[4] reserved1 - - Reserved
+3.13.3 UBX-MGA-DBD (0x13 0x80)
+3.13.3.1 Poll the navigation database
+Message UBX-MGA-DBD
+Poll the navigation database
+Type Poll request
+Comment Poll the whole navigation data base. The receiver will send all available data from its internal database. The
+receiver will indicate the finish of the transmission with a UBX-MGA-ACK. The msgPayloadStart field of the
+UBX-MGA-ACK message will contain a U4 representing the number of UBX-MGA-DBD-DATA* messages sent.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x80 0 see below CK_A CK_B
+Payload This message has no payload.
+3.13.3.2 Navigation database dump entry
+Message UBX-MGA-DBD
+Navigation database dump entry
+Type Input/output
+Comment Navigation database entry. The data fields are firmware-specific. Transmission of this type of message will
+be acknowledged by UBX-MGA-ACK messages, if acknowledgment has been enabled.
+See section AssistNow online in the integration manual for details.
+The maximum payload size for firmware 2.01 onwards is 164 bytes (which makes the maximum message size
+172 bytes).
+☞ UBX-MGA-DBD messages are only intended to be sent back to the same receiver that generated them.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x80 12 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1[12] reserved0 - - Reserved
+Start of repeated group (N times)
+12 + n U1 data - - firmware-specific data
+End of repeated group (N times)
+3.13.4 UBX-MGA-GAL (0x13 0x02)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 81 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.13.4.1 Galileo ephemeris assistance
+Message UBX-MGA-GAL-EPH
+Galileo ephemeris assistance
+Type Input
+Comment This message allows the delivery of Galileo ephemeris assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x02 76 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x01 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - Galileo Satellite identifier (see Satellite Numbering)
+3 U1 reserved0 - - Reserved
+4 U2 iodNav - - Ephemeris and clock correction Issue of Data
+6 I2 deltaN 2^-43 semicircles/s
+Mean motion difference from computed value
+8 I4 m0 2^-31 semicircles
+Mean anomaly at reference time
+12 U4 e 2^-33 - Eccentricity
+16 U4 sqrtA 2^-19 m^0.5 Square root of the semi-major axis
+20 I4 omega0 2^-31 semicircles
+Longitude of ascending node of orbital plane at weekly
+epoch
+24 I4 i0 2^-31 semicircles
+Inclination angle at reference time
+28 I4 omega 2^-31 semicircles
+Argument of perigee
+32 I4 omegaDot 2^-43 semicircles/s
+Rate of change of right ascension
+36 I2 iDot 2^-43 semicircles/s
+Rate of change of inclination angle
+38 I2 cuc 2^-29 radians Amplitude of the cosine harmonic correction term to
+the argument of latitude
+40 I2 cus 2^-29 radians Amplitude of the sine harmonic correction term to the
+argument of latitude
+42 I2 crc 2^-5 radians Amplitude of the cosine harmonic correction term to
+the orbit radius
+44 I2 crs 2^-5 radians Amplitude of the sine harmonic correction term to the
+orbit radius
+46 I2 cic 2^-29 radians Amplitude of the cosine harmonic correction term to
+the angle of inclination
+48 I2 cis 2^-29 radians Amplitude of the sine harmonic correction term to the
+angle of inclination
+50 U2 toe 60 s Ephemeris reference time
+52 I4 af0 2^-34 s SV clock bias correction coefficient
+56 I4 af1 2^-46 s/s SV clock drift correction coefficient
+60 I1 af2 2^-59 s/s
+squared
+SV clock drift rate correction coefficient
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 82 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+61 U1 sisaIndexE1
+E5b
+- - Signal-In-Space Accuracy index for dual frequency E1-
+E5b
+62 U2 toc 60 s Clock correction data reference Time of Week
+64 I2 bgdE1E5b 2^-32 s E1-E5b Broadcast Group Delay
+66 U1[2] reserved1 - - Reserved
+68 U1 healthE1B - - E1-B Signal Health Status
+69 U1 dataValidityE1
+B
+- - E1-B Data Validity Status
+70 U1 healthE5b - - E5b Signal Health Status
+71 U1 dataValidity
+E5b
+- - E5b Data Validity Status
+72 U1[4] reserved2 - - Reserved
+3.13.4.2 Galileo almanac assistance
+Message UBX-MGA-GAL-ALM
+Galileo almanac assistance
+Type Input
+Comment This message allows the delivery of Galileo almanac assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x02 32 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x02 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - Galileo Satellite identifier (see Satellite Numbering)
+3 U1 reserved0 - - Reserved
+4 U1 ioda - - Almanac Issue of Data
+5 U1 almWNa - week Almanac reference week number
+6 U2 toa 600 s Almanac reference time
+8 I2 deltaSqrtA 2^-9 m^0.5 Difference with respect to the square root of the
+nominal semi-major axis (29 600 km)
+10 U2 e 2^-16 - Eccentricity
+12 I2 deltaI 2^-14 semicircles
+Inclination at reference time relative to i0 = 56 degree
+14 I2 omega0 2^-15 semicircles
+Longitude of ascending node of orbital plane at weekly
+epoch
+16 I2 omegaDot 2^-33 semicircles/s
+Rate of change of right ascension
+18 I2 omega 2^-15 semicircles
+Argument of perigee
+20 I2 m0 2^-15 semicircles
+Satellite mean anomaly at reference time
+22 I2 af0 2^-19 s Satellite clock correction bias 'truncated'
+24 I2 af1 2^-38 s/s Satellite clock correction linear 'truncated'
+26 U1 healthE1B - - Satellite E1-B signal health status
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 83 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+27 U1 healthE5b - - Satellite E5b signal health status
+28 U1[4] reserved1 - - Reserved
+3.13.4.3 Galileo GPS time offset assistance
+Message UBX-MGA-GAL-TIMEOFFSET
+Galileo GPS time offset assistance
+Type Input
+Comment This message allows the delivery of Galileo time to GPS time offset.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x02 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x03 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I2 a0G 2^-35 s Constant term of the polynomial describing the offset
+6 I2 a1G 2^-51 s/s Rate of change of the offset
+8 U1 t0G 3600 s Reference time for GGTO data
+9 U1 wn0G - weeks Week Number of GGTO reference
+10 U1[2] reserved1 - - Reserved
+3.13.4.4 Galileo UTC assistance
+Message UBX-MGA-GAL-UTC
+Galileo UTC assistance
+Type Input
+Comment This message allows the delivery of Galileo UTC assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x02 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x05 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I4 a0 2^-30 s First parameter of UTC polynomial
+8 I4 a1 2^-50 s/s Second parameter of UTC polynomial
+12 I1 dtLS - s Delta time due to current leap seconds
+13 U1 tot 3600 s UTC parameters reference time of week (Galileo time)
+14 U1 wnt - weeks UTC parameters reference week number (the 8-bit
+WNt field)
+15 U1 wnLSF - weeks Week number at the end of which the future leap
+second becomes effective (the 8-bit WNLSF field)
+16 U1 dN - days Day number at the end of which the future leap second
+becomes effective
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 84 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+17 I1 dTLSF - s Delta time due to future leap seconds
+18 U1[2] reserved1 - - Reserved
+3.13.5 UBX-MGA-GLO (0x13 0x06)
+3.13.5.1 GLONASS ephemeris assistance
+Message UBX-MGA-GLO-EPH
+GLONASS ephemeris assistance
+Type Input
+Comment This message allows the delivery of GLONASS ephemeris assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x06 48 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x01 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - GLONASS Satellite identifier (see Satellite
+Numbering)
+3 U1 reserved0 - - Reserved
+4 U1 FT - - User range accuracy
+5 U1 B - - Health flag from string 2
+6 U1 M - - Type of GLONASS satellite (1 indicates GLONASS-M)
+7 I1 H - - Carrier frequency number of navigation RF signal,
+Range=(-7 .. 6), -128 for unknown
+8 I4 x 2^-11 km X component of the SV position in PZ-90.02
+coordinate System
+12 I4 y 2^-11 km Y component of the SV position in PZ-90.02
+coordinate System
+16 I4 z 2^-11 km Z component of the SV position in PZ-90.02
+coordinate System
+20 I4 dx 2^-20 km/s X component of theSV velocity in PZ-90.02 coordinate
+System
+24 I4 dy 2^-20 km/s Ycomponent of theSV velocity in PZ-90.02 coordinate
+System
+28 I4 dz 2^-20 km/s Z component of theSV velocity inPZ-90.02 coordinate
+System
+32 I1 ddx 2^-30 km/s^2 X component of the SV acceleration in PZ-90.02
+coordinate System
+33 I1 ddy 2^-30 km/s^2 Y component of the SV acceleration in PZ-90.02
+coordinate System
+34 I1 ddz 2^-30 km/s^2 Z component of the SV acceleration in PZ-90.02
+coordinate System
+35 U1 tb 15 minutes Index of a time interval within current day according to
+UTC(SU)
+36 I2 gamma 2^-40 - Relative carrier frequency deviation
+38 U1 E - days Ephemeris data age indicator
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 85 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+39 I1 deltaTau 2^-30 s Time difference between L2 and L1 band
+40 I4 tau 2^-30 s SV clock bias
+44 U1[4] reserved1 - - Reserved
+3.13.5.2 GLONASS almanac assistance
+Message UBX-MGA-GLO-ALM
+GLONASS almanac assistance
+Type Input
+Comment This message allows the delivery of GLONASS almanac assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x06 36 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x02 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - GLONASS Satellite identifier (see Satellite
+Numbering)
+3 U1 reserved0 - - Reserved
+4 U2 N - days Reference calender day number of almanac within the
+four-year period (from string 5)
+6 U1 M - - Type of GLONASS satellite (1 indicates GLONASS-M)
+7 U1 C - - Unhealthy flag at instant of almanac upload (1
+indicates operability of satellite)
+8 I2 tau 2^-18 s Coarse time correction to GLONASS time
+10 U2 epsilon 2^-20 - Eccentricity
+12 I4 lambda 2^-20 semicircles
+Longitude of the first (within the N-day) ascending
+node of satellite orbit in PC-90.02 coordinate system
+16 I4 deltaI 2^-20 semicircles
+Correction to the mean value of inclination
+20 U4 tLambda 2^-5 s Time of the first ascending node passage
+24 I4 deltaT 2^-9 s/orbitalperiod
+Correction to the mean value of Draconian period
+28 I1 deltaDT 2^-14 s/orbitalperiod^2
+Rate of change of Draconian period
+29 I1 H - - Carrier frequency number of navigation RF signal,
+Range=(-7 .. 6)
+30 I2 omega - - Argument of perigee
+32 U1[4] reserved1 - - Reserved
+3.13.5.3 GLONASS auxiliary time offset assistance
+Message UBX-MGA-GLO-TIMEOFFSET
+GLONASS auxiliary time offset assistance
+Type Input
+Comment This message allows the delivery of auxiliary GLONASS assistance (including the GLONASS time offsets to
+other GNSS systems) to a receiver.
+See section AssistNow online in the integration manual for details.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 86 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x06 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x03 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U2 N - days Reference calendar day number within the four-year
+period of almanac (from string 5)
+4 I4 tauC 2^-27 s Time scale correction to UTC(SU) time
+8 I4 tauGps 2^-31 s Correction to GPS time relative to GLONASS time
+12 I2 B1 2^-10 s Coefficient to determine delta UT1
+14 I2 B2 2^-16 s/msd Rate of change of delta UT1
+16 U1[4] reserved0 - - Reserved
+3.13.6 UBX-MGA-GPS (0x13 0x00)
+3.13.6.1 GPS ephemeris assistance
+Message UBX-MGA-GPS-EPH
+GPS ephemeris assistance
+Type Input
+Comment This message allows the delivery of GPS ephemeris assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x00 68 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x01 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - GPS Satellite identifier (see Satellite Numbering)
+3 U1 reserved0 - - Reserved
+4 U1 fitInterval - - Fit interval flag
+5 U1 uraIndex - - URA index
+6 U1 svHealth - - SV health
+7 I1 tgd 2^-31 s Group delay differential
+8 U2 iodc - - IODC
+10 U2 toc 2^4 s Clock data reference time
+12 U1 reserved1 - - Reserved
+13 I1 af2 2^-55 s/s
+squared
+Time polynomial coefficient 2
+14 I2 af1 2^-43 s/s Time polynomial coefficient 1
+16 I4 af0 2^-31 s Time polynomial coefficient 0
+20 I2 crs 2^-5 m Crs
+22 I2 deltaN 2^-43 semicircles/s
+Mean motion difference from computed value
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 87 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+24 I4 m0 2^-31 semicircles
+Mean anomaly at reference time
+28 I2 cuc 2^-29 radians Amplitude of cosine harmonic correction term to
+argument of latitude
+30 I2 cus 2^-29 radians Amplitude of sine harmonic correction term to
+argument of latitude
+32 U4 e 2^-33 - Eccentricity
+36 U4 sqrtA 2^-19 m^0.5 Square root of the semi-major axis
+40 U2 toe 2^4 s Reference time of ephemeris
+42 I2 cic 2^-29 radians Amplitude of cos harmonic correction term to angle of
+inclination
+44 I4 omega0 2^-31 semicircles
+Longitude of ascending node of orbit plane at weekly
+epoch
+48 I2 cis 2^-29 radians Amplitude of sine harmonic correction term to angle
+of inclination
+50 I2 crc 2^-5 m Amplitude of cosine harmonic correction term to orbit
+radius
+52 I4 i0 2^-31 semicircles
+Inclination angle at reference time
+56 I4 omega 2^-31 semicircles
+Argument of perigee
+60 I4 omegaDot 2^-43 semicircles/s
+Rate of right ascension
+64 I2 idot 2^-43 semicircles/s
+Rate of inclination angle
+66 U1[2] reserved2 - - Reserved
+3.13.6.2 GPS almanac assistance
+Message UBX-MGA-GPS-ALM
+GPS almanac assistance
+Type Input
+Comment This message allows the delivery of GPS almanac assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x00 36 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x02 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - GPS Satellite identifier (see Satellite Numbering)
+3 U1 svHealth - - SV health information
+4 U2 e 2^-21 - Eccentricity
+6 U1 almWNa - week Reference week number of almanac (the 8-bit WNa
+field)
+7 U1 toa 2^12 s Reference time of almanac
+8 I2 deltaI 2^-19 semicircles
+Delta inclination angle at reference time
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 88 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+10 I2 omegaDot 2^-38 semicircles/s
+Rate of right ascension
+12 U4 sqrtA 2^-11 m^0.5 Square root of the semi-major axis
+16 I4 omega0 2^-23 semicircles
+Longitude of ascending node of orbit plane
+20 I4 omega 2^-23 semicircles
+Argument of perigee
+24 I4 m0 2^-23 semicircles
+Mean anomaly at reference time
+28 I2 af0 2^-20 s Time polynomial coefficient 0 (8 MSBs)
+30 I2 af1 2^-38 s/s Time polynomial coefficient 1
+32 U1[4] reserved0 - - Reserved
+3.13.6.3 GPS health assistance
+Message UBX-MGA-GPS-HEALTH
+GPS health assistance
+Type Input
+Comment This message allows the delivery of GPS health assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x00 40 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x04 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 U1[32] healthCode - - Each byte represents a GPS SV (1-32). The 6 LSBs
+of each byte contains the 6 bit health code from
+subframes 4/5 page 25.
+36 U1[4] reserved1 - - Reserved
+3.13.6.4 GPS UTC assistance
+Message UBX-MGA-GPS-UTC
+GPS UTC assistance
+Type Input
+Comment This message allows the delivery of GPS UTC assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x00 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x05 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I4 utcA0 2^-30 s First parameter of UTC polynomial
+8 I4 utcA1 2^-50 s/s Second parameter of UTC polynomial
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 89 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+12 I1 utcDtLS - s Delta time due to current leap seconds
+13 U1 utcTot 2^12 s UTC parameters reference time of week (GPS time)
+14 U1 utcWNt - weeks UTC parameters reference week number (the 8-bit
+WNt field)
+15 U1 utcWNlsf - weeks Week number at the end of which the future leap
+second becomes effective (the 8-bit WNLSF field)
+16 U1 utcDn - days Day number at the end of which the future leap second
+becomes effective
+17 I1 utcDtLSF - s Delta time due to future leap seconds
+18 U1[2] reserved1 - - Reserved
+3.13.6.5 GPS ionosphere assistance
+Message UBX-MGA-GPS-IONO
+GPS ionosphere assistance
+Type Input
+Comment This message allows the delivery of GPS ionospheric assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x00 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x06 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I1 ionoAlpha0 2^-30 s Ionospheric parameter alpha0 [s]
+5 I1 ionoAlpha1 2^-27 s/semicircle
+Ionospheric parameter alpha1 [s/semi-circle]
+6 I1 ionoAlpha2 2^-24 s/(semicircle^2)
+Ionospheric parameter alpha2 [s/semi-circle^2]
+7 I1 ionoAlpha3 2^-24 s/(semicircle^3)
+Ionospheric parameter alpha3 [s/semi-circle^3]
+8 I1 ionoBeta0 2^11 s Ionospheric parameter beta0 [s]
+9 I1 ionoBeta1 2^14 s/semicircle
+Ionospheric parameter beta1 [s/semi-circle]
+10 I1 ionoBeta2 2^16 s/(semicircle^2)
+Ionospheric parameter beta2 [s/semi-circle^2]
+11 I1 ionoBeta3 2^16 s/(semicircle^3)
+Ionospheric parameter beta3 [s/semi-circle^3]
+12 U1[4] reserved1 - - Reserved
+3.13.7 UBX-MGA-INI (0x13 0x40)
+3.13.7.1 Initial position assistance XYZ
+Message UBX-MGA-INI-POS_XYZ
+Initial position assistance XYZ
+Type Input
+Comment This message allows the delivery of initial position assistance to a receiver in cartesian ECEF coordinates.
+This message is equivalent to the UBX-MGA-INI-POS_LLH message, except for the coordinate system.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 90 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+See section AssistNow Online in the integration manual for details.
+☞ Supplying position assistance that is inaccurate by more than the specified position accuracy, may lead
+to substantially degraded receiver performance.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x00 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I4 ecefX - cm WGS84 ECEF X coordinate
+8 I4 ecefY - cm WGS84 ECEF Y coordinate
+12 I4 ecefZ - cm WGS84 ECEF Z coordinate
+16 U4 posAcc - cm Position accuracy (stddev)
+3.13.7.2 Initial position assistance LLH
+Message UBX-MGA-INI-POS_LLH
+Initial position assistance LLH
+Type Input
+Comment This message allows the delivery of initial position assistance to a receiver in WGS84 lat/long/alt coordinates.
+This message is equivalent to the UBX-MGA-INI-POS_XYZ message, except for the coordinate system.
+See section AssistNow online in the integration manual for details.
+☞ Supplying position assistance that is inaccurate by more than the specified position accuracy, may lead
+to substantially degraded receiver performance.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 20 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x01 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I4 lat 1e-7 deg WGS84 Latitude
+8 I4 lon 1e-7 deg WGS84 Longitude
+12 I4 alt - cm WGS84 Altitude
+16 U4 posAcc - cm Position accuracy (stddev)
+3.13.7.3 Initial time assistance UTC
+Message UBX-MGA-INI-TIME_UTC
+Initial time assistance UTC
+Type Input
+Comment This message allows the delivery of UTC time assistance to a receiver. This message is equivalent to the UBXMGA-INI-TIME_GNSS message, except for the time base.
+See section AssistNow online in the integration manual for details.
+☞ Supplying time assistance that is inaccurate by more than the specified time accuracy, may lead to
+substantially degraded receiver performance.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 24 see below CK_A CK_B
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 91 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x10 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 X1 ref - - Reference to be used to set time
+bits 3…0   U:4 source - - • 0 = none, i.e. on receipt of message (will be
+inaccurate!)
+• 1 = relative to pulse sent to EXTINT0
+• 2 = relative to pulse sent to EXTINT1
+• 3-15 = reserved
+bit 4   U:1 fall - - use falling edge of EXTINT pulse (default rising) - only
+if source is EXTINT
+bit 5   U:1 last - - use last EXTINT pulse (default next pulse) - only if
+source is EXTINT
+3 I1 leapSecs - s Number of leap seconds since 1980 (or 0x80 = -128 if
+unknown)
+4 U2 year - - Year
+6 U1 month - - Month, starting at 1
+7 U1 day - - Day, starting at 1
+8 U1 hour - - Hour, from 0 to 23
+9 U1 minute - - Minute, from 0 to 59
+10 U1 second - s Seconds, from 0 to 59
+11 X1 bitfield0 - - bitfield:
+bit 0   U:1 trustedSource - - Time is provided from a trusted source. Potentially
+usable for replay attack detection
+• 0: Unknown
+• 1: Time source can be trusted for spoofing
+detection
+12 U4 ns - ns Nanoseconds, from 0 to 999,999,999
+16 U2 tAccS - s Seconds part of time accuracy
+18 U1[2] reserved0 - - Reserved
+20 U4 tAccNs - ns Nanoseconds part of time accuracy, from 0 to
+999,999,999
+3.13.7.4 Initial time assistance GNSS
+Message UBX-MGA-INI-TIME_GNSS
+Initial time assistance GNSS
+Type Input
+Comment This message allows the delivery of time assistance to a receiver in a chosen GNSS timebase. This message
+is equivalent to the UBX-MGA-INI-TIME_UTC message, except for the time base.
+See section AssistNow online in the integration manual for details.
+☞ Supplying time assistance that is inaccurate by more than the specified time accuracy, may lead to
+substantially degraded receiver performance.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 24 see below CK_A CK_B
+Payload description:
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 92 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x11 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 X1 ref - - Reference to be used to set time
+bits 3…0   U:4 source - - • 0 = none, i.e. on receipt of message (will be
+inaccurate!)
+• 1 = relative to pulse sent to EXTINT0
+• 2 = relative to pulse sent to EXTINT1
+• 3-15 = reserved
+bit 4   U:1 fall - - use falling edge of EXTINT pulse (default rising) - only
+if source is EXTINT
+bit 5   U:1 last - - use last EXTINT pulse (default next pulse) - only if
+source is EXTINT
+3 U1 gnssId - - Source of time information. Currently supported:
+• 0 = GPS time
+• 2 = Galileo time
+• 3 = BeiDou time
+• 6 = GLONASS time
+• 7 = NavIC time
+4 X1 bitfield0 - - bitfield:
+bit 0   U:1 trustedSource - - Time is provided from a trusted source. Potentially
+usable for replay attack detection
+• 0: Unknown
+• 1: Time source can be trusted for spoofing
+detection
+5 U1 reserved0 - - Reserved
+6 U2 week - - GNSS week number
+8 U4 tow - s GNSS time of week
+12 U4 ns - ns GNSS time of week, nanosecond part from 0 to
+999,999,999
+16 U2 tAccS - s Seconds part of time accuracy
+18 U1[2] reserved1 - - Reserved
+20 U4 tAccNs - ns Nanoseconds part of time accuracy, from 0 to
+999,999,999
+3.13.7.5 Initial clock drift assistance
+Message UBX-MGA-INI-CLKD
+Initial clock drift assistance
+Type Input
+Comment This message allows the delivery of clock drift assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+☞ Supplying clock drift assistance that is inaccurate by more than the specified accuracy, may lead to
+substantially degraded receiver performance.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 93 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+0 U1 type - - Message type (0x20 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 I4 clkD - ns/s Clock drift
+8 U4 clkDAcc - ns/s Clock drift accuracy
+3.13.7.6 Initial frequency assistance
+Message UBX-MGA-INI-FREQ
+Initial frequency assistance
+Type Input
+Comment This message allows the delivery of external frequency assistance to a receiver.
+See section AssistNow online in the integration manual for details.
+☞ Supplying external frequency assistance that is inaccurate by more than the specified accuracy, may lead
+to substantially degraded receiver performance.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x21 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 reserved0 - - Reserved
+3 X1 flags - - Frequency reference
+bits 3…0   U:4 source - - • 0 = frequency available on EXTINT0
+• 1 = frequency available on EXTINT1
+• 2-15 = reserved
+bit 4   U:1 fall - - use falling edge of EXTINT pulse (default rising)
+4 I4 freq 1e-2 Hz Frequency
+8 U4 freqAcc - ppb Frequency accuracy
+3.13.7.7 Attitude initialization data
+Message UBX-MGA-INI-ATT
+Attitude initialization data
+Type Input
+Comment This message is used to set attitude initialization data.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x40 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x40 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U2 age - s Age of calibration data. (Set to 0 if unknown)
+4 I4 roll 1e-5 deg Vehicle roll.
+8 I4 pitch 1e-5 deg Vehicle pitch.
+12 I4 heading 1e-5 deg Vehicle heading.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 94 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+16 U4 accRoll 1e-5 deg Vehicle roll accuracy (if null, roll angle is not available).
+20 U4 accPitch 1e-5 deg Vehicle pitch accuracy (if null, pitch angle is not
+available).
+24 U4 accHeading 1e-5 deg Vehicle heading accuracy (if null, heading angle is not
+available).
+3.13.8 UBX-MGA-QZSS (0x13 0x05)
+3.13.8.1 QZSS ephemeris assistance
+Message UBX-MGA-QZSS-EPH
+QZSS ephemeris assistance
+Type Input
+Comment This message allows the delivery of QZSS ephemeris assistance to a receiver.
+See section AssistNow Online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x05 68 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x01 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - QZSS Satellite identifier (see Satellite Numbering),
+Range 1-5
+3 U1 reserved0 - - Reserved
+4 U1 fitInterval - - Fit interval flag
+5 U1 uraIndex - - URA index
+6 U1 svHealth - - SV health
+7 I1 tgd 2^-31 s Group delay differential
+8 U2 iodc - - IODC
+10 U2 toc 2^4 s Clock data reference time
+12 U1 reserved1 - - Reserved
+13 I1 af2 2^-55 s/s
+squared
+Time polynomial coefficient 2
+14 I2 af1 2^-43 s/s Time polynomial coefficient 1
+16 I4 af0 2^-31 s Time polynomial coefficient 0
+20 I2 crs 2^-5 m Crs
+22 I2 deltaN 2^-43 semicircles/s
+Mean motion difference from computed value
+24 I4 m0 2^-31 semicircles
+Mean anomaly at reference time
+28 I2 cuc 2^-29 radians Amp of cosine harmonic corr term to arg of lat
+30 I2 cus 2^-29 radians Amp of sine harmonic corr term to arg of lat
+32 U4 e 2^-33 - eccentricity
+36 U4 sqrtA 2^-19 m^0.5 Square root of the semi-major axis A
+40 U2 toe 2^4 s Reference time of ephemeris
+42 I2 cic 2^-29 radians Amp of cos harmonic corr term to angle of inclination
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 95 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+44 I4 omega0 2^-31 semicircles
+Long of asc node of orbit plane at weekly epoch
+48 I2 cis 2^-29 radians Amp of sine harmonic corr term to angle of inclination
+50 I2 crc 2^-5 m Amp of cosine harmonic corr term to orbit radius
+52 I4 i0 2^-31 semicircles
+Inclination angle at reference time
+56 I4 omega 2^-31 semicircles
+Argument of perigee
+60 I4 omegaDot 2^-43 semicircles/s
+Rate of right ascension
+64 I2 idot 2^-43 semicircles/s
+Rate of inclination angle
+66 U1[2] reserved2 - - Reserved
+3.13.8.2 QZSS almanac assistance
+Message UBX-MGA-QZSS-ALM
+QZSS almanac assistance
+Type Input
+Comment This message allows the delivery of QZSS almanac assistance to a receiver.
+See section AssistNow Online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x05 36 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x02 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 svId - - QZSS Satellite identifier (see Satellite Numbering),
+Range 1-5
+3 U1 svHealth - - Almanac SV health information
+4 U2 e 2^-21 - Almanac eccentricity
+6 U1 almWNa - week Reference week number of almanac (the 8-bit WNa
+field)
+7 U1 toa 2^12 s Reference time of almanac
+8 I2 deltaI 2^-19 semicircles
+Delta inclination angle at reference time
+10 I2 omegaDot 2^-38 semicircles/s
+Almanac rate of right ascension
+12 U4 sqrtA 2^-11 m^0.5 Almanac square root of the semi-major axis A
+16 I4 omega0 2^-23 semicircles
+Almanac long of asc node of orbit plane at weekly
+20 I4 omega 2^-23 semicircles
+Almanac argument of perigee
+24 I4 m0 2^-23 semicircles
+Almanac mean anomaly at reference time
+28 I2 af0 2^-20 s Almanac time polynomial coefficient 0 (8 MSBs)
+30 I2 af1 2^-38 s/s Almanac time polynomial coefficient 1
+32 U1[4] reserved0 - - Reserved
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 96 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.13.8.3 QZSS health assistance
+Message UBX-MGA-QZSS-HEALTH
+QZSS health assistance
+Type Input
+Comment This message allows the delivery of QZSS health assistance to a receiver.
+See section AssistNow Online in the integration manual for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x05 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x04 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[2] reserved0 - - Reserved
+4 U1[5] healthCode - - Each byte represents a QZSS SV (1-5). The 6 LSBs
+of each byte contains the 6 bit health code from
+subframes 4/5, data ID = 3, SV ID = 51
+9 U1[3] reserved1 - - Reserved
+3.13.9 UBX-MGA-SF (0x13 0x10)
+3.13.9.1 Sensor fusion initialization data
+Message UBX-MGA-SF-INI
+Sensor fusion initialization data
+Type Input/output
+Comment This message is used to poll and set sensor fusion initialization data.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x10 96 + nValA·8 + nValB·8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x00 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1 nValA - - Number of values in sensor data repeated group
+3 U1 nValB - - Number of values in sensor data repeated group B
+4 U2 age - s Age of calibration data. (Set to 0 if unknown)
+6 U1[90] reserved0 - - Reserved
+Start of repeated group (nValA times)
+96 + n·8 U1[8] reserved1 - - Reserved
+End of repeated group (nValA times)
+Start of repeated group (nValB times)
+96 + nValA·8
++ n·8
+U1[8] reserved2 - - Reserved
+End of repeated group (nValB times)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 97 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.13.9.2 Sensor fusion initialization data
+Message UBX-MGA-SF-INI2
+Sensor fusion initialization data
+Type Input/output
+Comment This message is used to poll and set sensor fusion initialization data.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x13 0x10 464 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 type - - Message type (0x10 for this type)
+1 U1 version - - Message version (0x00 for this version)
+2 U1[462] reserved0 - - Reserved

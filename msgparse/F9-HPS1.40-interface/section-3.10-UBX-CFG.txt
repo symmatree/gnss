@@ -1,0 +1,431 @@
+3.10 UBX-CFG (0x06)
+The messages in the UBX-CFG class are used to configure the receiver and poll current configuration
+values as well as for sending commands to the receiver. Unless stated otherwise, any message in
+this class sent to the receiver is either acknowledged (by a UBX-ACK-ACK message) if processed
+successfully or rejected (with a UBX-ACK-NAK message) if processed unsuccessfully.
+3.10.1 UBX-CFG-CFG (0x06 0x09)
+3.10.1.1 Clear, save and load configurations
+Message UBX-CFG-CFG
+Clear, save and load configurations
+Type Command
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 61 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Comment See Receiver configuration for a detailed description on how receiver configuration should be used. The
+behavior of this message has changed for protocol versions greater than 23.01. Use UBX-CFG-VALSET and
+UBX-CFG-VALDEL with the appropriate layers instead. These new messages support selective saving and
+clearing to retain the behavior removed from this message. The three masks which were used to clear, save
+and load a subsection of configuration have lost their meaning. It is no longer possible to save or clear a
+subsection of the configuration using this message. The behavior of the masks is now:
+• if any bit is set in the clearMask: all configuration in the selected non-volatile memory is deleted
+• if any bit is set in the saveMask: all current configuration is stored (copied) to the selected layers
+• if any bit is set in the loadMask: The current configuration is discarded and rebuilt from all the lower
+layers
+Note that commands can be combined. The sequence of execution is clear, save, then load. The receiver
+replies with a single UBX-ACK-ACK or UBX-ACK-NAK. A UBX-ACK-ACK indicates that all operations were
+successful. A UBX-ACK-NAK indicates that at least one of the configured operations was unsuccessful. It is
+recommended to send individual commands for a more comprehensive monitoring of the success or not of
+the individual operations.
+☞ Old functionality of this message is not available in protocol versions greater than 23.01. Use UBX-CFGVALSET, UBX-CFG-VALGET, UBX-CFG-VALDEL instead.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x09 12 + [0,1] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 X4 clearMask - - Mask for configuration to clear
+bits 31…0   U:32 clearAll - - Clear all saved configuration from the selected nonvolatile memory if any bit is set
+4 X4 saveMask - - Mask for configuration to save
+bits 31…0   U:32 saveAll - - Save all current configuration to the selected nonvolatile memory if any bit is set
+8 X4 loadMask - - Mask for configuration to load
+bits 31…0   U:32 loadAll - - Discard current configuration and rebuilt it from lower
+non-volatile memory layers if any bit is set
+Start of optional group
+12 X1 deviceMask - - Mask which selects the memory devices for saving
+and/or clearing operation
+Note that if a deviceMask is not provided, the receiver
+defaults the operation requested to battery-backed
+RAM (BBR) and Flash (if available)
+bit 0   U:1 devBBR - - Battery-backed RAM
+bit 1   U:1 devFlash - - Flash
+bit 2   U:1 devEEPROM - - EEPROM (only supported for protocol versions less
+than 14.00)
+bit 4   U:1 devSpiFlash - - SPI Flash (only supported for protocol versions less
+than 14.00)
+End of optional group
+3.10.2 UBX-CFG-OTP (0x06 0x41)
+3.10.2.1 Write file 0xA4: receiver configuration items
+Message UBX-CFG-OTP
+Write file 0xA4: receiver configuration items
+Type Set
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 62 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Comment Writes the configuration data (key ID and value) for one or more configuration items to the OTP memory. Any
+supported configuration item can be set this way, provided there is enough free OTP memory available.
+It is possible to write multiple files of this type. However, each file on the OTP memory has its own header,
+which consumes memory. To reduce memory usage, combine the configurations of multiple items into a
+single file.
+The same configuration item can be set more than once. In such a case, only the latest value is effective.
+Configuration in the OTP memory is permanent and has limited space. Verify the configuration in advance
+and check the available space before writing the final configuration to the OTP memory.
+For details, see section OTP memory in the Integration manual.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x41 12 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1[12] cfgHeader - - File header: use u-center tool to compose the
+message.
+Start of repeated group (N times)
+12 + n U1 cfgData - - Configuration data (key and value pairs)
+End of repeated group (N times)
+3.10.3 UBX-CFG-RST (0x06 0x04)
+3.10.3.1 Reset receiver / Clear backup data structures
+Message UBX-CFG-RST
+Reset receiver / Clear backup data structures
+Type Command
+Comment Do not expect this message to be acknowledged by the receiver.
+• Newer FW version will not acknowledge this message at all.
+• Older FW version will acknowledge this message but the acknowledge may not be sent completely
+before the receiver is reset.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x04 4 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 X2 navBbrMask - - BBR sections to clear. The following special sets apply:
+• 0x0000 Hot start
+• 0x0001 Warm start
+• 0xFFFF Cold start
+bit 0   U:1 eph - - Ephemeris
+bit 1   U:1 alm - - Almanac
+bit 2   U:1 health - - Health
+bit 3   U:1 klob - - Klobuchar parameters
+bit 4   U:1 pos - - Position
+bit 5   U:1 clkd - - Clock drift
+bit 6   U:1 osc - - Oscillator parameter
+bit 7   U:1 utc - - UTC correction + GPS leap seconds parameters
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 63 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 8   U:1 rtc - - RTC
+bit 11   U:1 sfdr - - SFDR Parameters (only available on the ADR/UDR/
+HPS product variant) and weak signal compensation
+estimates
+bit 12   U:1 vmon - - SFDR Vehicle Monitoring Parameter (only available on
+the ADR/UDR/HPS product variant)
+bit 13   U:1 tct - - TCT Parameters (only available on the ADR/UDR/HPS
+product variant)
+bit 15   U:1 aop - - Autonomous orbit parameters
+2 U1 resetMode - - Reset Type
+• 0x00 = Hardware reset (watchdog) immediately
+• 0x01 = Controlled software reset
+• 0x02 = Controlled software reset (GNSS only)
+• 0x04 = Hardware reset (watchdog) after
+shutdown
+• 0x08 = Controlled GNSS stop
+• 0x09 = Controlled GNSS start
+3 U1 reserved0 - - Reserved
+3.10.4 UBX-CFG-SPT (0x06 0x64)
+3.10.4.1 Configure and start a sensor production test
+Message UBX-CFG-SPT
+Configure and start a sensor production test
+Type Get/set
+Comment The production test uses the built-in self-test capabilities of an attached sensor.
+This message is only supported if a sensor is directly connected to the u-blox receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x64 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 reserved0 - - Reserved
+2 U2 sensorId - - ID of the sensor to be tested; see UBX-MON-SPT for
+defined IDs
+4 U1[8] reserved1 - - Reserved
+3.10.5 UBX-CFG-VALDEL (0x06 0x8c)
+3.10.5.1 Delete configuration item values
+Message UBX-CFG-VALDEL
+Delete configuration item values
+Type Set
+Comment Overview:
+• This message can be used to delete saved configuration to effectively revert the item values to defaults.
+• This message can delete saved configuration from the flash configuration layer and the BBR
+configuration layer. The changes will not be effective until these layers are loaded into the RAM layer.
+• This message is limited to containing a maximum of 64 keys up for deletion; i.e. N is a maximum of 64.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 64 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+• This message can be used multiple times and every time the result will be applied immediately. To send
+this message multiple times with the result being applied at the end, see version 1 of UBX-CFG-VALDEL
+that supports transactions.
+• This message does not check if the resulting configuration is valid.
+• See Receiver configuration for details.
+This message returns a UBX-ACK-NAK and no configuration is applied:
+• if any key is unknown to the receiver FW
+• if the layer's bitfield does not specify a layer to delete a value from.
+Notes:
+• If a key is sent multiple times within the same message, the value is effectively deleted only once.
+• Attempting to delete items that have not been set before, or that have already been deleted, is
+considered a valid request.
+• The provided keys can be complete key values (group and item specifiers) or wild-card specifications. A
+complete key value constitutes a deletion request for one key-value pair. A key value with a valid group
+specifier and 0xffff in the item part of the key value (bits 0-15) constitutes a deletion request for all
+items in the specified group. A key with a value of 0xfff in the group part of the key value (bits 16-27) is a
+deletion request for all items known to the receiver in all groups.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x8c 4 + [0..n]·4 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 X1 layers - - The layers where the configuration should be deleted
+from
+bit 1   U:1 bbr - - Delete configuration from the BBR layer
+bit 2   U:1 flash - - Delete configuration from the Flash layer
+2 U1[2] reserved0 - - Reserved
+Start of repeated group (N times)
+4 + n·4 U4 keys - - Configuration key IDs of the configuration items to be
+deleted
+End of repeated group (N times)
+3.10.5.2 Delete configuration item values (with transaction)
+Message UBX-CFG-VALDEL
+Delete configuration item values (with transaction)
+Type Set
+Comment Overview:
+• This message can be used to delete saved configuration to effectively revert them to defaults.
+• This message can delete saved configuration from the flash configuration layer and the BBR
+configuration layer. The changes will not be effective until these layers are loaded into the RAM layer.
+• This message is limited to containing a maximum of 64 keys up for deletion; i.e. N is a maximum of 64.
+• This message can be used multiple times with the result being managed within a transaction.
+• This message does not check if the resulting configuration is valid.
+• See Receiver configuration for details.
+• See version 0 of UBX-CFG-VALDEL for simplified version of this message.
+This message returns a UBX-ACK-NAK, cancels any started transaction, and no configuration is applied:
+• if any key within a transaction is unknown to the receiver FW
+• if an invalid transaction state transition is requested
+• if the layer's bitfield changes within a transaction
+• if the layer's bitfield does not specify a layer to delete a value from.
+Notes:
+• Any request for another UBX-CFG- message type (including UBX-CFG-VALSET and UBX-CFG-VALGET)
+will cancel any started transaction, and no configuration is applied.
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 65 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+• This message can be sent with no keys to delete for the purposes of managing the transaction state
+transition.
+• If a key is sent multiple times within the same message or within the same transaction, the value is
+effectively deleted only once.
+• Attempting to delete items that have not been set before, or that have already been deleted, is
+considered a valid request.
+• The provided keys can be complete key values (group and item specifiers) or wild-card specifications. A
+complete key value constitutes a deletion request for one key-value pair. A key value with a valid group
+specifier and 0xffff in the item part of the key value (bits 0-15) constitutes a deletion request for all
+items in the specified group. A key with a value of 0xfff in the group part of the key value (bits 16-27) is a
+deletion request for all items known to the receiver in all groups.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x8c 4 + [0..n]·4 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 X1 layers - - The layers where the configuration should be deleted
+from
+bit 1   U:1 bbr - - Delete configuration from the BBR layer
+bit 2   U:1 flash - - Delete configuration from the Flash layer
+2 X1 transaction - - Transaction action to be applied:
+bits 1…0   U:2 action - - Transaction action to be applied:
+• 0 = Transactionless UBX-CFG-VALDEL: In the
+next UBX-CFG-VALDEL, it can be either 0 or 1.
+If a transaction has not yet been started, the
+incoming configuration is applied. If a transaction
+has already been started, cancels any started
+transaction and the incoming configuration is
+applied.
+• 1 = (Re)Start deletion transaction: In the next
+UBX-CFG-VALDEL, it can be either 0, 1, 2 or
+3. If a transaction has not yet been started, a
+transaction will be started. If a transaction has
+already been started, restarts the transaction,
+effectively removing all previous non-applied UBXCFG-VALDEL messages.
+• 2 = Deletion transaction ongoing: In the next UBXCFG-VALDEL, it can be either 0, 1, 2 or 3.
+• 3 = Apply and end a deletion transaction: In the
+next UBX-CFG-VALDEL, it can be either 0 or 1.
+3 U1 reserved0 - - Reserved
+Start of repeated group (N times)
+4 + n·4 U4 keys - - Configuration key IDs of the configuration items to be
+deleted
+End of repeated group (N times)
+3.10.6 UBX-CFG-VALGET (0x06 0x8b)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 66 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.10.6.1 Get configuration items
+Message UBX-CFG-VALGET
+Get configuration items
+Type Poll request
+Comment Overview:
+• This message is used to get configuration values by providing a list of configuration key IDs, which
+identify the configuration items to retrieve.
+• This message can specify the configuration layer where the values of the specified configuration items
+are retrieved from.
+• This message is limited to containing a maximum of 64 key IDs.
+• See Receiver configuration for details.
+This message returns a UBX-ACK-NAK:
+• if any key is unknown to the receiver FW
+• if the layer field specifies an invalid layer to get the value from
+• if the keys array specifies more than 64 key IDs.
+Notes:
+• If a value is requested multiple times within the same poll request, then the reply will contain it multiple
+times.
+• The provided keys can be complete key values (group and item specifiers) or wild-card specifications.
+A complete key value will constitute a request for one key-value pair. A key value that has a valid group
+specifier and 0xffff in the item part of the key value (bits 0-15) constitutes a request for all items in the
+specified group. A key with a value of 0xfff in the group part of the key value (bits 16-27) is a request for
+all items known to the receiver in all groups.
+• The response message is limited to containing a maximum of 64 key-value pairs. If there are wild-card
+specifications then there may be more than 64 possible responses. In order to handle this, the 'position'
+field can specify that the response message should skip this number of key-value pairs before it starts
+constructing the message. This allows a large set of values to be retrieved 64 at a time. If the response
+contains less than 64 key-value pairs then all values have been reported, otherwise there may be more to
+read.
+• It is not possible to retrieve configuration values for the same configuration item from multiple
+configuration layers. Separate poll requests must be made for each desired layer.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x8b 4 + [0..n]·4 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 layer - - The layer from which the configuration items should
+be retrieved:
+• 0 - RAM layer
+• 1 - BBR layer
+• 2 - Flash layer
+• 7 - Default layer
+2 U2 position - - Skip this many key values before constructing output
+message
+Start of repeated group (N times)
+4 + n·4 U4 keys - - Configuration key IDs of the configuration items to be
+retrieved
+End of repeated group (N times)
+3.10.6.2 Configuration items
+Message UBX-CFG-VALGET
+Configuration items
+Type Polled
+Comment This message is output by the receiver to return requested configuration data (key and value pairs).
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 67 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+See Receiver configuration for details.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x8b 4 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1 layer - - The layer from which the configuration item was
+retrieved:
+• 0 - RAM layer
+• 1 - BBR
+• 2 - Flash
+• 7 - Default
+2 U2 position - - Number of configuration items skipped in the result
+set before constructing this message (mirrors the
+equivalent field in the request message)
+Start of repeated group (N times)
+4 + n U1 cfgData - - Configuration data (key and value pairs)
+End of repeated group (N times)
+3.10.7 UBX-CFG-VALSET (0x06 0x8a)
+3.10.7.1 Set configuration item values
+Message UBX-CFG-VALSET
+Set configuration item values
+Type Set
+Comment Overview:
+• This message is used to set a configuration by providing configuration data (a list of key and value
+pairs), which identify the configuration items to change, and their new values.
+• This message is limited to containing a maximum of 64 key-value pairs.
+• This message can be used multiple times and every time the result will be applied immediately. To send
+this message multiple times with the result being applied at the end, see version 1 of UBX-CFG-VALSET
+that supports transactions.
+• See Receiver configuration for details.
+This message returns a UBX-ACK-NAK and no configuration is applied:
+• if any key is unknown to the receiver FW
+• if the layer's bitfield does not specify a layer to save a value to
+• if the requested configuration is not valid. The validity of a configuration is checked only if the message
+requests to apply the configuration to the RAM configuration layer.
+Notes:
+• If a key is sent multiple times within the same message, then the value eventually being applied is the
+last sent.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x8a 4 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 X1 layers - - The layers where the configuration should be applied
+bit 0   U:1 ram - - Update configuration in the RAM layer
+bit 1   U:1 bbr - - Update configuration in the BBR layer
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 68 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 2   U:1 flash - - Update configuration in the Flash layer
+2 U1[2] reserved0 - - Reserved
+Start of repeated group (N times)
+4 + n U1 cfgData - - Configuration data (key and value pairs)
+End of repeated group (N times)
+3.10.7.2 Set configuration item values (with transaction)
+Message UBX-CFG-VALSET
+Set configuration item values (with transaction)
+Type Set
+Comment Overview:
+• This message is used to set a configuration by providing configuration data (a list of key and value
+pairs), which identify the configuration items to change, and their new values.
+• This message is limited to containing a maximum of 64 key-value pairs.
+• This message can be used multiple times with the result being managed within a transaction. Within
+a transaction there is no limit on the number key-value pairs; a transaction is effectively limited to the
+number of known keys.
+• See Receiver configuration for details.
+• See version 0 of UBX-CFG-VALSET for simplified version of this message.
+This message returns a UBX-ACK-NAK, cancels any started transaction, and no configuration is applied:
+• if any key within a transaction is unknown to the receiver FW
+• if an invalid transaction state transition is requested
+• if the layer's bitfield changes within a transaction
+• if the layer's bitfield does not specify a layer to save a value to
+This message returns a UBX-ACK-NAK, and no configuration is applied:
+• if the requested configuration is not valid. While in a transaction context, only the last message that
+requests to apply the transaction returns a UBX-ACK-NAK. The validity of a configuration is checked
+only if the message requests to apply the configuration to the RAM configuration layer. This also applies
+to a transactionless request.
+Notes:
+• Any request for another UBX-CFG-message type (including UBX-CFG-VALDEL and UBX-CFG-VALGET)
+will cancel any started transaction, and no configuration is applied.
+• This message can be sent with no key/values to set for the purposes of managing the transaction state
+transition.
+• If a key is sent multiple times within the same message or within the same transaction, then the value
+eventually being applied is the last sent.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x06 0x8a 4 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 X1 layers - - The layers where the configuration should be applied
+bit 0   U:1 ram - - Update configuration in the RAM layer
+bit 1   U:1 bbr - - Update configuration in the BBR layer
+bit 2   U:1 flash - - Update configuration in the Flash layer
+2 U1 transaction - - Transaction action to be applied
+bits 1…0   U:2 action - - Transaction action to be applied:
+• 0 = Transactionless UBX-CFG-VALSET: In the
+next UBX-CFG-VALSET, it can be either 0 or 1.
+If a transaction has not yet been started, the
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 69 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+incoming configuration is applied (if valid). If a
+transaction has already been started, cancels
+any started transaction and the incoming
+configuration is applied (if valid).
+• 1 = (Re)Start set transaction: In the next
+UBX-CFG-VALSET, it can be either 0, 1, 2 or
+3. If a transaction has not yet been started, a
+transaction will be started. If a transaction has
+already been started, restarts the transaction,
+effectively removing all previous non-applied UBXCFG-VALSET messages.
+• 2 = Set transaction ongoing: In the next UBXCFG-VALSET, it can be either 0, 1, 2 or 3.
+• 3 = Apply and end a set transaction: In the next
+UBX-CFG-VALSET, it can be either 0 or 1.
+3 U1 reserved0 - - Reserved
+Start of repeated group (N times)
+4 + n U1 cfgData - - Configuration data (key and value pairs)
+End of repeated group (N times)

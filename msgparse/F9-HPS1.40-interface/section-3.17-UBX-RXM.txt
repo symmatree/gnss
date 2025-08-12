@@ -1,0 +1,486 @@
+3.17 UBX-RXM (0x02)
+The messages in the UBX-RXM class are used to output status and result data from the receiver
+manager as well as sending commands to the receiver manager.
+3.17.1 UBX-RXM-COR (0x02 0x34)
+3.17.1.1 Differential correction input status
+Message UBX-RXM-COR
+Differential correction input status
+Type Output
+Comment This message shows information on received differential correction input messages. It is output upon
+successful parsing of a differential correction input message, irrespective of whether the parsed message is
+supported/used by the receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x34 12 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1 ebno 2^-3 dB Energy per bit to noise power spectral density ratio
+(Eb/N0). 0: unknown. Reported only for protocol UBXRXM-PMP (SPARTN) to monitor signal quality.
+2 U1 reserved0 - - Reserved
+3 U1 reserved1 - - Reserved
+4 X4 statusInfo - - Message input status information
+bits 4…0   U:5 protocol - - Input correction data protocol:
+• 0: Unknown
+• 1: RTCM3
+• 2: SPARTN (Secure Position Augmentation for
+Real Time Navigation)
+• 29: UBX-RXM-PMP (SPARTN)
+• 30: UBX-RXM-QZSSL6
+bits 6…5   U:2 errStatus - - Error status of the received correction message
+content based on possibly available error codes or
+checksums:
+• 0: Unknown
+• 1: Error-free
+• 2: Erroneous
+bits 8…7   U:2 msgUsed - - Status of receiver using the input message:
+• 0: Unknown
+• 1: Not used
+• 2: Used
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 166 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bits 24…9   U:16 correctionId - - Identifier for the correction stream:
+• For RTCM 3: Reference station ID (DF003) of
+the received RTCM input message. Valid range
+0-4095. Reported only for the standard RTCM
+messages that include the DF003 field and for
+the u-blox proprietary RTCM messages 4072.x.
+For all other messages, reports 0xFFFF.
+• For other correction protocols 0xFFFF.
+bit 25   U:1 msgTypeValid - - Validity of the msgType field. Set to False e.g. if the
+protocol does not define msgType.
+bit 26   U:1 msgSubType
+Valid
+- - Validity of the msgSubType field.Set to False e.g. if the
+protocol does not define subtype for the msgType.
+bit 27   U:1 msgInputHandle - - Input handling support of the input message:
+• 0: Receiver does not have input handling support
+for this message
+• 1: Receiver has input handling support for this
+message. Input handling support does not
+necessarily mean that message is supported/
+used by the receiver.
+bits 29…28   U:2 msgEncrypted - - Encryption status of the input message:
+• 0: Unknown
+• 1: Not encrypted
+• 2: Encrypted
+bits 31…30   U:2 msgDecrypted - - Decryption status of the input message:
+• 0: Unknown
+• 1: Not decrypted
+• 2: Decrypted
+8 U2 msgType - - Message type
+10 U2 msgSubType - - Message subtype
+3.17.2 UBX-RXM-MEASX (0x02 0x14)
+3.17.2.1 Satellite measurements for RRLP
+Message UBX-RXM-MEASX
+Satellite measurements for RRLP
+Type Periodic/polled
+Comment The message payload data is, where possible and appropriate, according to the Radio Resource LCS (Location
+Services) Protocol (RRLP) [1]. One exception is the satellite and GNSS IDs, which here are given according to
+the Satellite Numbering scheme. The correct satellites have to be selected and their satellite ID translated
+accordingly [1, tab. A.10.14] for use in a RRLP Measure Position Response Component. Similarly, the
+measurement reference time of week has to be forwarded correctly (modulo 14400000 for the 24 LSB GPS
+measurements variant, modulo 3600000 for the 22 LSB Galileo and Additional Navigation Satelllite Systems
+(GANSS) measurements variant) of the RRLP measure position response to the SMLC.
+Reference: [1] ETSI TS 144 031 V11.0.0 (2012-10), Digital cellular telecommunications system (Phase 2+),
+Location Services (LCS), Mobile Station (MS) - Serving Mobile Location Centre (SMLC), Radio Resource LCS
+Protocol (RRLP), (3GPP TS 44.031 version 11.0.0 Release 11).
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x14 44 + numSV·24 see below CK_A CK_B
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 167 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version, currently 0x01
+1 U1[3] reserved0 - - Reserved
+4 U4 gpsTOW - ms GPS measurement reference time
+8 U4 gloTOW - ms GLONASS measurement reference time
+12 U4 bdsTOW - ms BeiDou measurement reference time
+16 U1[4] reserved1 - - Reserved
+20 U4 qzssTOW - ms QZSS measurement reference time
+24 U2 gpsTOWacc 2^-4 ms GPS measurement reference time accuracy (0xffff = >
+4s)
+26 U2 gloTOWacc 2^-4 ms GLONASS measurement reference time accuracy
+(0xffff = > 4s)
+28 U2 bdsTOWacc 2^-4 ms BeiDou measurement reference time accuracy (0xffff
+= > 4s)
+30 U1[2] reserved2 - - Reserved
+32 U2 qzssTOWacc 2^-4 ms QZSS measurement reference time accuracy (0xffff =
+> 4s)
+34 U1 numSV - - Number of satellites in repeated block
+35 U1 flags - - Flags
+bits 1…0   U:2 towSet - - TOW set (0 = no, 1 or 2 = yes)
+36 U1[8] reserved3 - - Reserved
+Start of repeated group (numSV times)
+44 + n·24 U1 gnssId - - GNSS ID (see Satellite Numbering)
+45 + n·24 U1 svId - - Satellite ID (see Satellite Numbering)
+46 + n·24 U1 cNo - - carrier noise ratio (0..63)
+47 + n·24 U1 mpathIndic - - multipath index (according to [1]) (0 = not measured,
+1 = low, 2 = medium, 3 = high)
+48 + n·24 I4 dopplerMS 0.04 m/s Doppler measurement
+52 + n·24 I4 dopplerHz 0.2 Hz Doppler measurement
+56 + n·24 U2 wholeChips - - whole value of the code phase measurement (0..1022
+for GPS)
+58 + n·24 U2 fracChips - - fractional value of the code phase measurement
+(0..1023)
+60 + n·24 U4 codePhase 2^-21 ms Code phase
+64 + n·24 U1 intCodePhase - ms Integer (part of the) code phase
+65 + n·24 U1 pseuRangeRMS
+Err
+- - pseudorange RMS error index (according to [1]) (0..63)
+66 + n·24 U1[2] reserved4 - - Reserved
+End of repeated group (numSV times)
+3.17.3 UBX-RXM-PMP (0x02 0x72)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 168 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.17.3.1 PMP (LBAND) message
+Message UBX-RXM-PMP
+PMP (LBAND) message
+Type Input
+Comment Point to Multipoint (LBAND) input message
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x72 24 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1 reserved0 - - Reserved
+2 U2 numBytesUser
+Data
+- - Number of bytes the userData block has in this frame
+(0...504)
+4 U4 timeTag - ms Time since startup when frame started - if max value
+of type is reached the counter will be reset
+8 U4[2] uniqueWord - - Received unique words
+16 U2 service
+Identifier
+- - Received service identifier
+18 U1 spare - - Received spare data
+19 U1 uniqueWordBit
+Errors
+- - Number of bit errors in both unique words
+20 U2 fecBits - - Number of bits corrected by FEC (forward error
+correction)
+22 U1 ebno 2^-3 dB Energy per bit to noise power spectral density ratio
+23 U1 reserved1 - - Reserved
+Start of repeated group (N times)
+24 + n U1 userData - - Received user data, which is variable
+(=numBytesUserData)
+End of repeated group (N times)
+3.17.4 UBX-RXM-PMREQ (0x02 0x41)
+3.17.4.1 Power management request
+Message UBX-RXM-PMREQ
+Power management request
+Type Command
+Comment This message requests a power management related task of the receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x41 8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U4 duration - ms Duration of the requested task. The maximum
+supported value is 12 days. Set to 0 to wait for a
+wakeup signal on a pin
+4 X4 flags - - task flags
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 169 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 1   U:1 backup - - The receiver goes into backup mode for a time period
+defined by duration, provided that it is not connected
+to USB
+3.17.4.2 Power management request
+Message UBX-RXM-PMREQ
+Power management request
+Type Command
+Comment This message requests a power management related task of the receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x41 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1[3] reserved0 - - Reserved
+4 U4 duration - ms Duration of the requested task. The maximum
+supported value is 12 days. Set to 0 to wait for a
+wakeup signal on a pin
+8 X4 flags - - task flags
+bit 1   U:1 backup - - The receiver goes into backup mode for a time period
+defined by duration, provided that it is not connected
+to USB
+bit 2   U:1 force - - Force receiver backup while USB is connected. USB
+interface will be disabled.
+12 X4 wakeupSources - - Configure pins to wake up the receiver. The receiver
+wakes up if there is either a falling or a rising edge on
+one of the configured pins.
+bit 3   U:1 uartrx - - Wake up the receiver if there is an edge on the UART
+RX pin
+bit 5   U:1 extint0 - - Wake up the receiver if there is an edge on the
+EXTINT0 pin
+bit 6   U:1 extint1 - - Wake up the receiver if there is an edge on the
+EXTINT1 pin
+bit 7   U:1 spics - - Wake up the receiver if there is an edge on the SPI CS
+pin
+3.17.5 UBX-RXM-QZSSL6 (0x02 0x73)
+3.17.5.1 QZSS L6 message
+Message UBX-RXM-QZSSL6
+QZSS L6 message
+Type Input
+Comment QZSSL6 message input, as defined in 'Quasi ZenithSatelliteSystem InterfaceSpecification Centimeter Level
+Augmentation Service (IS-QZSS-L6-001)'.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x73 264 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 170 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+1 U1 svId - - Satellite identifier (see Satellite Numbering)
+2 U2 cno 2^-8 dBHz Mean C/N0
+4 U4 timeTag - ms Local time tag corresponding to the beginning of a
+received QZSS L6 message
+8 U1 groupDelay - ns L6 group delay w.r.t. L2 on channel
+9 U1 bitErrCorr - - Number of bit errors corrected by Reed-Solomon
+decoder
+10 X2 chInfo - - Information about receiver channel associated with a
+received QZSS L6 message
+bits 9…8   U:2 chn - - Receiver channel (0, 1)
+bit 10   U:1 msgName - - Message name, 0=L6D, 1=L6E
+bits 13…12   U:2 errStatus - - Error status of the received QZSS L6 message:
+0=unknown, 1=error-free, 2=erroneous
+bits 15…14   U:2 chName - - Channel name, 0=channel A, 1=channel B
+12 U1[2] reserved0 - - Reserved
+14 U1[250] msgBytes - - Bytes in a QZSS L6 message
+3.17.6 UBX-RXM-RAWX (0x02 0x15)
+3.17.6.1 Multi-GNSS raw measurements
+Message UBX-RXM-RAWX
+Multi-GNSS raw measurements
+Type Periodic/polled
+Comment This message contains the information needed to be able to generate a RINEX 3 multi-GNSS observation file
+(see ftp://ftp.igs.org/pub/data/format/).
+This message contains pseudorange, Doppler, carrier phase, phase lock and signal quality information for
+GNSS satellites once signals have been synchronized. This message supports all active GNSS.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x15 16 + numMeas·32 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 R8 rcvTow - s Measurement time of week in receiver local time
+approximately aligned to the GPS time system.
+The receiver local time of week, week number and leap
+second information can be used to translate the time
+to other time systems. More information about the
+difference in time systems can be found in the RINEX
+3 format documentation. For a receiver operating in
+GLONASS only mode, UTC time can be determined by
+subtracting the leapS field from GPS time regardless
+of whether the GPS leap seconds are valid.
+8 U2 week - weeks GPS week number in receiver local time.
+10 I1 leapS - s GPSleap seconds (GPS-UTC).Thisfield represents the
+receiver's best knowledge of the leap seconds offset.
+A flag is given in the recStat bitfield to indicate if the
+leap seconds are known.
+11 U1 numMeas - - Number of measurements to follow
+12 X1 recStat - - Receiver tracking status bitfield
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 171 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+bit 0   U:1 leapSec - - Leap seconds have been determined
+bit 1   U:1 clkReset - - Clock reset applied. Typically the receiver clock is
+changed in increments of integer milliseconds.
+13 U1 version - - Message version (0x01 for this version)
+14 U1[2] reserved0 - - Reserved
+Start of repeated group (numMeas times)
+16 + n·32 R8 prMes - m Pseudorange measurement [m]. GLONASS inter
+frequency channel delays are compensated with an
+internal calibration table.
+24 + n·32 R8 cpMes - cycles Carrier phase measurement [cycles]. The carrier
+phase initial ambiguity is initialized using an
+approximate value to make the magnitude of the
+phase close to the pseudorange measurement.
+Clock resets are applied to both phase and
+code measurements in accordance with the RINEX
+specification.
+32 + n·32 R4 doMes - Hz Doppler measurement (positive sign for approaching
+satellites) [Hz]
+36 + n·32 U1 gnssId - - GNSS identifier (see Satellite Numbering for a list of
+identifiers)
+37 + n·32 U1 svId - - Satellite identifier (see Satellite Numbering)
+38 + n·32 U1 sigId - - New style signal identifier (see Signal Identifiers).(not
+supported for protocol versions less than 27.00)
+39 + n·32 U1 freqId - - Only used for GLONASS: This is the frequency slot + 7
+(range from 0 to 13)
+40 + n·32 U2 locktime - ms Carrier phase locktime counter (maximum 64500ms)
+42 + n·32 U1 cno - dBHz Carrier-to-noise density ratio (signal strength) [dB-Hz]
+43 + n·32 X1 prStdev 0.01*2^n m Estimated pseudorange measurement standard
+deviation
+bits 3…0   U:4 prStd - - Estimated pseudorange standard deviation
+44 + n·32 X1 cpStdev 0.004 cycles Estimated carrier phase measurement standard
+deviation (note a raw value of 0x0F indicates the value
+is invalid)
+bits 3…0   U:4 cpStd - - Estimated carrier phase standard deviation
+45 + n·32 X1 doStdev 0.002*2^n Hz Estimated Doppler measurement standard deviation.
+bits 3…0   U:4 doStd - - Estimated Doppler standard deviation
+46 + n·32 X1 trkStat - - Tracking status bitfield
+bit 0   U:1 prValid - - Pseudorange valid
+bit 1   U:1 cpValid - - Carrier phase valid
+bit 2   U:1 halfCyc - - Half cycle valid
+bit 3   U:1 subHalfCyc - - Half cycle subtracted from phase
+47 + n·32 U1 reserved1 - - Reserved
+End of repeated group (numMeas times)
+3.17.7 UBX-RXM-RLM (0x02 0x59)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 172 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.17.7.1 Galileo SAR short-RLM report
+Message UBX-RXM-RLM
+Galileo SAR short-RLM report
+Type Output
+Comment This message contains the contents of any Galileo Search and Rescue (SAR) Short Return Link Message
+detected by the receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x59 16 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 type - - Message type (0x01 for Short-RLM)
+2 U1 svId - - Identifier of transmitting satellite (see Satellite
+Numbering)
+3 U1 reserved0 - - Reserved
+4 U1[8] beacon - - Beacon identifier (60 bits), with bytes ordered by
+earliest transmitted (most significant) first. Top four
+bits of first byte are zero.
+12 U1 message - - Message code (4 bits)
+13 U1[2] params - - Parameters (16 bits), with bytes ordered by earliest
+transmitted (most significant) first.
+15 U1 reserved1 - - Reserved
+3.17.7.2 Galileo SAR long-RLM report
+Message UBX-RXM-RLM
+Galileo SAR long-RLM report
+Type Output
+Comment This message contains the contents of any Galileo Search and Rescue (SAR) Long Return Link Message
+detected by the receiver.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x59 28 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x00 for this version)
+1 U1 type - - Message type (0x02 for Long-RLM)
+2 U1 svId - - Identifier of transmitting satellite (see Satellite
+Numbering)
+3 U1 reserved0 - - Reserved
+4 U1[8] beacon - - Beacon identifier (60 bits), with bytes ordered by
+earliest transmitted (most significant) first. Top four
+bits of first byte are zero.
+12 U1 message - - Message code (4 bits)
+13 U1[12] params - - Parameters (96 bits), with bytes ordered by earliest
+transmitted (most significant) first.
+25 U1[3] reserved1 - - Reserved
+3.17.8 UBX-RXM-RTCM (0x02 0x32)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 173 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+3.17.8.1 RTCM input status
+Message UBX-RXM-RTCM
+RTCM input status
+Type Output
+Comment This message shows info on a received RTCM input message. It is output upon successful parsing of an RTCM
+input message, irrespective of whether the RTCM message is supported or not by the receiver.
+This message is deprecated. Use UBX-RXM-COR instead.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x32 8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x02 for this version)
+1 X1 flags - - RTCM input status flags
+bit 0   U:1 crcFailed - - 0 when RTCM message received and passed CRC
+check, 1 when failed, in which case refStation and
+msgType might be corrupted and misleading
+bits 2…1   U:2 msgUsed - - 2 = RTCM message used successfully by the receiver,
+1 = not used, 0 = do not know
+2 U2 subType - - Message subtype, only applicable to u-blox proprietary
+RTCM message 4072 (not available on all products)
+4 U2 refStation - - Reference station ID:
+• For RTCM 2.3: Reference station ID of the
+received RTCM 2 input message. Valid range
+0-1023.
+• For RTCM 3.3: Reference station ID (DF003) of
+the received RTCM input message. Valid range
+0-4095. Reported only for the standard RTCM
+messages that include the DF003 field and for
+the u-blox proprietary RTCM messages 4072.x.
+For all other messages, reports 0xFFFF.
+6 U2 msgType - - Message type
+3.17.9 UBX-RXM-SPARTN (0x02 0x33)
+3.17.9.1 SPARTN input status
+Message UBX-RXM-SPARTN
+SPARTN input status
+Type Output
+Comment This message shows info on a received SPARTN input message. It is output upon successful parsing of a
+SPARTN input message, irrespective of whether the SPARTN message is supported or not by the receiver.
+This message is deprecated. Use UBX-RXM-COR instead.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x33 8 see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 X1 flags - - SPARTN input status flags
+bits 2…1   U:2 msgUsed - - 2 = SPARTN message used successfully by the
+receiver, 1 = not used, 0 = do not know
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 174 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+2 U2 subType - - Message subtype
+4 U1[2] reserved0 - - Reserved
+6 U2 msgType - - Message type
+3.17.10 UBX-RXM-SPARTNKEY (0x02 0x36)
+3.17.10.1 Poll installed keys
+Message UBX-RXM-SPARTNKEY
+Poll installed keys
+Type Poll request
+Comment Depending on the number of active keys, the receiver shall send a UBX-RXM-SPARTNKEY message describing
+the keys. If there are no active keys then a UBX-RXM-SPARTNKEYshall be sent, with field numKeys set to zero.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x36 0 see below CK_A CK_B
+Payload This message has no payload.
+3.17.10.2 Transfer dynamic SPARTN keys
+Message UBX-RXM-SPARTNKEY
+Transfer dynamic SPARTN keys
+Type Input/output
+Comment This message is used to load keys to the receiver.
+The receiver has provision to store up to two (2) keys. By definition, the one currently used is named 'current'
+and the one that shall be used as soon as 'current' expires is named 'next'.
+Depending on how many active keys the receiver has at the time of receiving the message, one of the following
+shall occur:
+• If the receiver has no active keys, then the first key transferred shall become 'current'. If the message
+contains a second key, this shall become 'next'.
+• If the receiver has one (1) active key (current), the transferred key shall be stored as 'current'. If the
+message contains a second key, that key shall be stored as 'next'.
+• If the receiver has two (2) active keys (current and next), the transferred key(s) shall be stored as
+'current' and 'next'.
+To query the receiver's keys state (including the keys themselves), send a UBX-RXM-SPARTNKEYpoll request.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x02 0x36 4 + numKeys·8 + [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+0 U1 version - - Message version (0x01 for this version)
+1 U1 numKeys - - Number of keys the message contains (can be 0, 1
+or 2). In case of 0 the remaining fields will not be
+transmitted.
+2 U1[2] reserved0 - - Reserved
+Start of repeated group (numKeys times)
+4 + n·8 U1 reserved1 - - Reserved
+5 + n·8 U1 keyLengthBytes - - Key length in bytes
+6 + n·8 U2 validFromWno - week GPS week number the key is valid from
+8 + n·8 U4 validFromTow - sec GPS time of week the key is valid from
+End of repeated group (numKeys times)
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 175 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+Start of repeated group (N times)
+4 +
+numKeys·8 +
+n
+U1 key - - Key(s) payload. This is a concatenation of all keys as
+raw bytes. The number of keys is defined in 'numKeys'
+field. Each key length is defined in its 'keyLengthBytes'
+field.
+End of repeated group (N times)

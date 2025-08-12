@@ -2,5 +2,4 @@
 set -euo pipefail
 pushd "$(dirname "$0")"
 
-go build
-go test -v ./...
+go build && go test -v ./...

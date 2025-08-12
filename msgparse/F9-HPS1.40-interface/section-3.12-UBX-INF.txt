@@ -1,0 +1,74 @@
+3.12 UBX-INF (0x04)
+Messages in the UBX-INF class are used to output strings from the firmware or application code. All
+messages have an associated type to indicate the nature or priority of the message.
+3.12.1 UBX-INF-DEBUG (0x04 0x04)
+3.12.1.1 ASCII output with debug contents
+Message UBX-INF-DEBUG
+ASCII output with debug contents
+Type Output
+Comment This message has a variable length payload, representing an ASCII string.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x04 0x04 [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+Start of repeated group (N times)
+0 + n CH str - - ASCII Character
+End of repeated group (N times)
+3.12.2 UBX-INF-ERROR (0x04 0x00)
+3.12.2.1 ASCII output with error contents
+Message UBX-INF-ERROR
+ASCII output with error contents
+Type Output
+Comment This message has a variable length payload, representing an ASCII string.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x04 0x00 [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+Start of repeated group (N times)
+0 + n CH str - - ASCII Character
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 75 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+End of repeated group (N times)
+3.12.3 UBX-INF-NOTICE (0x04 0x02)
+3.12.3.1 ASCII output with informational contents
+Message UBX-INF-NOTICE
+ASCII output with informational contents
+Type Output
+Comment This message has a variable length payload, representing an ASCII string.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x04 0x02 [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+Start of repeated group (N times)
+0 + n CH str - - ASCII Character
+End of repeated group (N times)
+3.12.4 UBX-INF-TEST (0x04 0x03)
+3.12.4.1 ASCII output with test contents
+Message UBX-INF-TEST
+ASCII output with test contents
+Type Output
+Comment This message has a variable length payload, representing an ASCII string.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x04 0x03 [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+Start of repeated group (N times)
+0 + n CH str - - ASCII Character
+End of repeated group (N times)
+3.12.5 UBX-INF-WARNING (0x04 0x01)
+3.12.5.1 ASCII output with warning contents
+Message UBX-INF-WARNING
+ASCII output with warning contents
+Type Output
+Comment This message has a variable length payload, representing an ASCII string.
+Header Class ID Length (Bytes) Payload Checksum Message
+structure 0xb5 0x62 0x04 0x01 [0..n] see below CK_A CK_B
+Payload description:
+Byte offset Type Name Scale Unit Description
+Start of repeated group (N times)
+0 + n CH str - - ASCII Character
+UBXDOC-963802114-13138 - R01 3 UBX protocol Page 76 of 296
+C1-Public
+u-blox F9 HPS 1.40 - Interface description
+End of repeated group (N times)
