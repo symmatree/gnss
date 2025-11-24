@@ -20,7 +20,7 @@ jobs:
           datestamp=$(date +'%Y%m%d')
           echo "TIMESTAMP=${timestamp}" | tee -a "$GITHUB_OUTPUT"
           echo "DATESTAMP=${datestamp}" | tee -a "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5.6.0
         with:
           python-version: ">=3.11"
